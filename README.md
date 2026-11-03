@@ -4,11 +4,11 @@
 
 ## 在线体验
 
-一键打开公开演示（Cloudflare quick tunnel，同域代理 + SiliconFlow API 已接通）：
+一键打开公开演示：
 
 **[https://tree-packing-fell-planned.trycloudflare.com](https://tree-packing-fell-planned.trycloudflare.com)**
 
-> 演示机重启或 tunnel 重建后 URL 可能变化；以本段链接为准。若仅用 GitHub Pages 托管静态 `docs/morning-feed.html`，页面可打开，但 AI 秒读 / 深度解读 / 观点碰撞需本仓库代理与 SiliconFlow API Key，静态托管 alone 无法调用 `/api/*`。
+> **公开演示仅使用 Mock，不调用 LLM**（AI 秒读 / 深度解读 / 观点碰撞为本地占位文案）。演示机重启或 tunnel 重建后 URL 可能变化；以本段链接为准。本地完整 LLM 能力需按下方「快速开始」配置 SiliconFlow API Key 并运行代理。
 
 ## 快速开始
 
