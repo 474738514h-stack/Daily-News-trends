@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!-- lr-gen:1793695124 -->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>每日风向</title>
+  <meta name="application-name" content="每日风向" />
+  <meta name="apple-mobile-web-app-title" content="每日风向" />
+  <meta name="description" content="每日风向 — AI / 科技 / 军事 / 遥感与 GitHub 开源早间信息流" />
+  <style>
+    /* 微信读书式：白底、黑字正文、灰阶次要信息、轻分隔 */
+    :root {
+      --bg0: #ffffff; --ink: #111111; --muted: #8a8a8a; --line: #ededed;
+      --ai: #1a1a1a; --world: #000000; --hot: #8a8a8a; --hot-bg: #f7f7f7;
+      --chip: #f5f5f5; --pos: #2f6b4f; --pos-bg: #f3f8f5; --neg: #9b3d3d; --neg-bg: #faf4f4;
+      --storm: #8a8a8a; --storm-bg: #f7f7f7; --disrupt: #555555; --disrupt-bg: #f5f5f5;
+      --neu: #8a8a8a; --neu-bg: #f5f5f5; --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --panel: #ffffff; --shadow: 0 8px 28px rgba(0,0,0,.08);
+      --primary-soft: #f5f5f5; --primary-soft-ink: #111111;
+      --font-book: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+      --font-ui: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; height: 100%; }
+    body {
+      margin: 0; font-family: var(--font-book); color: var(--ink);
+      background: var(--bg0);
+      font-weight: 400; line-height: 1.7;
+      min-height: 100%; overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .view { display: none; }
+    .view.active { display: block; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+      width: min(720px, calc(100% - 1.2rem)); margin: 0 auto; padding: .85rem 0 .35rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar .brand-mini {
+      font-family: var(--font-book);
+      font-size: 1.2rem; color: var(--world); font-weight: 600; margin: 0;
+    }
+    .topbar .brand-mini em { color: var(--world); font-style: italic; }
+    .icon-btn {
+      border: 1px solid var(--line); background: #fff; color: var(--world);
+      border-radius: 8px; padding: .45rem .75rem; font: inherit; font-size: .92rem;
+      font-weight: 400; cursor: pointer; min-height: 2.4rem;
+    }
+    .icon-btn:hover { background: #f7f7f7; }
+    .icon-btn.primary { background: var(--world); color: #fff; border-color: var(--world); }
+    .shell { width: min(720px, calc(100% - 1.2rem)); margin: 0 auto; padding: 0 0 3.5rem; }
+    header.hero { padding: .2rem 0 .5rem; }
+    .brand {
+      margin: 0; font-family: var(--font-book);
+      font-size: clamp(2.2rem, 6vw, 3.1rem); font-weight: 600; line-height: 1.15; color: var(--world);
+    }
+    .brand em { font-style: italic; color: var(--world); }
+    .lede { margin: .65rem 0 0; color: var(--muted); line-height: 1.65; font-size: 1.02rem; max-width: 36em; }
+    .meta-line { margin-top: .55rem; font-size: .82rem; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+    .tabs { display: flex; gap: .4rem; flex-wrap: wrap; margin: .85rem 0 .4rem; }
+    .tabs button {
+      border: 1px solid var(--line); background: #fff; color: var(--muted); border-radius: 8px;
+      padding: .48rem .85rem; font: inherit; font-size: .95rem; font-weight: 400; cursor: pointer;
+    }
+    .tabs button.active { background: var(--world); color: #fff; border-color: var(--world); }
+    .count { color: var(--muted); font-size: .92rem; margin: .35rem 0 .2rem; }
+    .prefs-chip {
+      display: inline-flex; flex-wrap: wrap; gap: .35rem; margin: .35rem 0 .6rem;
+    }
+    .prefs-chip span {
+      font-size: .78rem; background: #fff; border: 1px solid var(--line); color: var(--muted);
+      border-radius: 999px; padding: .2rem .55rem;
+    }
+    article.item { padding: 1.45rem 0 1.35rem; border-bottom: 1px solid var(--line); background: #fff; }
+    article.item.hot-item { background: #fff; margin: 0; padding-left: 0; padding-right: 0; border-radius: 0; }
+    article.item + article.item { margin-top: 0; padding-top: 1.45rem; }
+    .row-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .55rem; }
+    .tag { font-size: .76rem; font-weight: 400; border-radius: 4px; padding: .16rem .45rem; background: var(--chip); color: var(--muted); border: none; }
+    .tag.world, .tag.ai, .tag.hot, .tag.cross, .tag.tech, .tag.mil, .tag.rs, .tag.gh {
+      background: var(--chip); color: var(--muted);
+    }
+    .tag.cross.weak { background: #fafafa; color: #a3a3a3; }
+    h2 { margin: 0 0 .55rem; font-family: var(--font-book); font-size: 1.62rem; line-height: 1.4; font-weight: 600; color: #000; }
+    .summary { margin: 0 0 .75rem; line-height: 1.75; font-size: 1.08rem; font-weight: 400; color: #111; }
+    .analysis {
+      margin: 0; line-height: 1.7; font-size: 1.05rem; color: #111;
+      border-left: 2px solid #e0e0e0; padding: .15rem 0 .15rem .9rem;
+    }
+    .analysis b { display: block; color: #000; font-weight: 400; font-size: .92rem; margin-bottom: .25rem; letter-spacing: .02em; }
+    blockquote.parse-quote {
+      margin: .9rem 0 0; line-height: 1.7; font-size: 1.05rem; color: #111;
+      border-left: 2px solid #e0e0e0; padding: .35rem 0 .35rem .9rem;
+      background: transparent; font-weight: 400;
+      display: flex; flex-direction: column; gap: .35rem;
+    }
+    /* AI 秒读：结论黑字；潜台词次要灰 */
+
+    .parse-quote.live-loading { opacity: .72; }
+    .parse-quote .live-err, .deep-body.live-err, .debate-hint.live-err, .impact.live-err .impact-title { color: var(--neg); }
+    .deep-body.live-loading, .debate-thread.live-loading, .impact.live-loading .impact-title,
+    .impact.live-loading .impact-detail { color: var(--muted); font-style: italic; }
+    .impact.live-loading { opacity: .72; }
+    .parse-quote .parse-line {
+      margin: 0; line-height: 1.7; font-size: 1.05rem; color: #111; font-weight: 400;
+    }
+    .parse-quote .parse-line.read {
+      color: #111; font-size: 1.05rem; line-height: 1.7; font-weight: 400;
+    }
+    .parse-quote .parse-line.sub {
+      color: #111; font-size: 1.02rem; line-height: 1.7; font-weight: 400;
+    }
+    .parse-quote .parse-kicker {
+      font-weight: 400; letter-spacing: .02em; margin-right: .2rem;
+      white-space: nowrap;
+    }
+    .parse-quote .parse-line.read .parse-kicker { color: #000; }
+    .parse-quote .parse-line.sub .parse-kicker { color: #111; }
+    .parse-quote .parse-line.read strong {
+      font-weight: 600; color: #000;
+    }
+    .parse-quote .parse-line.sub strong {
+      font-weight: 600; color: #111;
+    }
+    .parse-quote .parse-label {
+      display: inline-block; font-size: .82rem; font-weight: 400; color: #000;
+      letter-spacing: .04em; margin-right: .35rem; vertical-align: baseline;
+    }
+    .parse-quote .parse-curly {
+      font-weight: 400; font-size: 1.45em; line-height: 1; color: inherit;
+      vertical-align: -0.06em;
+    }
+    .parse-body { margin: 0; line-height: 1.7; font-size: inherit; color: inherit; font-weight: 400; }
+    /* Trial: comment-style threads for 代表什么 / 趋势 / 行业影响 (easy revert) */
+    .comments {
+      margin: 1.1rem 0 0; padding: 0; border-top: none;
+      display: flex; flex-direction: column; gap: 1.05rem;
+    }
+    .comment { display: flex; gap: .7rem; align-items: flex-start; }
+    .comment-av {
+      flex: 0 0 1.9rem; width: 1.9rem; height: 1.9rem; border-radius: 999px;
+      background: #f5f5f5; color: #8a8a8a; border: 1px solid var(--line);
+      font-family: var(--font-book); font-size: .72rem; font-weight: 400;
+      display: flex; align-items: center; justify-content: center; line-height: 1;
+      user-select: none;
+    }
+    .comment-av.meaning, .comment-av.parse { background: #f5f5f5; color: #111; padding: 0; overflow: hidden; }
+    .comment-av.parse svg { display:block; width:100%; height:100%; }
+    .comment-av.trend { background: #f5f5f5; color: #111; }
+    .comment-av.impact { background: #f5f5f5; color: #111; }
+    .comment-main { flex: 1; min-width: 0; }
+    .comment-meta { display: flex; flex-wrap: wrap; gap: .35rem; align-items: baseline; }
+    .comment-name { font-size: .9rem; color: #000; font-weight: 500; letter-spacing: .02em; }
+    .comment-body {
+      margin: .28rem 0 0; font-size: 1.02rem; line-height: 1.75; font-weight: 400;
+      color: #111;
+    }
+    .comment-badges { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
+    .badge { font-size: .78rem; font-weight: 400; border-radius: 4px; padding: .14rem .42rem; }
+    .badge.pos { background: var(--pos-bg); color: var(--pos); }
+    .badge.neg { background: var(--neg-bg); color: var(--neg); }
+    .badge.storm { background: var(--storm-bg); color: var(--storm); }
+    .badge.disrupt { background: var(--disrupt-bg); color: var(--disrupt); }
+    .badge.neu { background: var(--neu-bg); color: var(--neu); }
+    .badge.conf { background: #f5f5f5; color: #8a8a8a; }
+    /* Industry impact — plain text rows: 『正向』主结论 + detail */
+    .impact {
+      margin: .85rem 0 0; padding: .85rem 0 0;
+      border-radius: 0; border: none; border-top: 1px solid var(--line);
+      background: transparent;
+    }
+    .impact-rows {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .impact-row {
+      display: block;
+    }
+    .impact-body {
+      display: flex; flex-direction: column; gap: .18rem;
+    }
+    .impact-title {
+      margin: 0; font-size: 1.05rem; line-height: 1.55; font-weight: 600; color: #111;
+    }
+    .impact-title strong { font-weight: 600; color: #111; }
+    .impact-detail strong { font-weight: 600; color: #111; }
+    .impact-tag {
+      font-weight: 400; color: #111;
+    }
+    .impact-detail {
+      margin: 0; padding-left: 1.05em; font-size: 1.02rem; line-height: 1.7; font-weight: 400; color: #111;
+    }
+    .impact-detail:empty { display: none; }
+    .impact-conf {
+      margin: .65rem 0 0; font-size: 13px; color: #8a8a8a; line-height: 1.4;
+    }
+    .impact-conf:empty { display: none; margin: 0; }
+    .impact-cross { margin: .45rem 0 0; font-size: .88rem; color: #111; line-height: 1.5; }
+.actions {
+      margin-top: 1.15rem; padding-top: 0; border-top: none;
+      display: block; width: 100%;
+    }
+    .actions .meta { font-size: .88rem; color: #111; letter-spacing: .01em; }
+    a.action-link {
+      display: inline-flex; align-items: center; justify-content: flex-start;
+      border: none; background: transparent; color: #1677ff; border-radius: 0;
+      padding: .2rem 0; font: inherit; font-size: .88rem; font-weight: 400; line-height: 1.4;
+      min-height: 0; text-decoration: none; cursor: pointer; text-align: left;
+      transition: color .18s ease;
+      flex: 0 0 auto; width: auto; min-width: 0;
+      white-space: nowrap;
+    }
+    a.action-link:hover { background: transparent; color: #0958d9; text-decoration: underline; }
+    button.deep-btn {
+      border: 1px solid var(--line); background: #fff; color: #111;
+      border-radius: 8px; padding: .5rem .85rem; font: inherit; font-size: .9rem; font-weight: 500;
+      cursor: pointer; min-height: 2.35rem; text-align: center; line-height: 1.25;
+      transition: background .18s ease, color .18s ease, border-color .18s ease, transform .15s ease;
+      flex: 1 1 0; min-width: 0; width: auto;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    button.deep-btn:hover { background: #f7f7f7; color: #000; }
+    button.deep-btn.open { background: #111; color: #fff; border-color: #111; }
+    .deep-panel {
+      display: grid; grid-template-rows: 0fr; margin-top: 0; padding: 0 .9rem;
+      background: #fff; border: 1px solid transparent; border-radius: 0;
+      opacity: 0; overflow: hidden;
+      transition: grid-template-rows .14s ease, opacity .12s ease, margin-top .12s ease, padding .12s ease, border-color .12s ease;
+    }
+    .deep-panel > .deep-inner { min-height: 0; overflow: hidden; }
+    .deep-panel.show {
+      grid-template-rows: 1fr; opacity: 1; margin-top: .8rem; padding: .9rem 0 0;
+      border-color: transparent; border-top: 1px solid var(--line);
+    }
+    .deep-label { margin: 0 0 .4rem; font-size: .92rem; font-weight: 500; color: #000; }
+    .deep-body { margin: 0; font-size: 1.05rem; line-height: 1.75; font-weight: 400; color: #111; }
+    .deep-body.live-loading, .deep-body.live-err { white-space: pre-wrap; }
+    .deep-sec { margin: 0; padding: 0; }
+    .deep-sec + .deep-sec { margin-top: .85rem; }
+    .deep-h {
+      margin: 0 0 .18rem; font-family: var(--font-book);
+      font-size: 1.02rem; font-weight: 600; line-height: 1.35; color: #000;
+    }
+    .deep-p { margin: 0; font-size: 1.05rem; line-height: 1.75; font-weight: 400; color: #111; }
+    .deep-p + .deep-p { margin-top: .35rem; }
+    .end { text-align: center; color: #8a8a8a; padding: 1.5rem 0; font-size: .95rem; }
+    footer.page-foot { color: #8a8a8a; font-size: .9rem; line-height: 1.55; margin-top: 1rem; }
+    a { color: #555; font-weight: 400; text-decoration: none; }
+    a:hover { text-decoration: underline; color: #111; }
+
+    /* Settings modal — white reading sheet */
+    .modal-root {
+      display: flex;
+      position: fixed; inset: 0; z-index: 80;
+      align-items: center; justify-content: center;
+      padding: calc(.75rem + var(--safe-top)) .75rem calc(.75rem + var(--safe-bottom));
+      background: rgba(0, 0, 0, .32);
+      backdrop-filter: blur(6px);
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s ease;
+    }
+    .modal-root.open { opacity: 1; pointer-events: auto; }
+    .modal-panel {
+      width: min(560px, 100%);
+      max-height: min(86vh, 720px);
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 1.1rem 1.1rem 1.15rem;
+      transform: translateY(10px) scale(.97);
+      transition: transform .22s ease;
+    }
+    .modal-root.open .modal-panel { transform: translateY(0) scale(1); }
+    .modal-head {
+      display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+      margin-bottom: .35rem;
+    }
+    .modal-head h2 {
+      margin: 0; font-family: var(--font-book);
+      font-size: 1.2rem; font-weight: 600; color: #000; line-height: 1.3;
+    }
+    .modal-close {
+      border: 1px solid var(--line); background: #fff; color: var(--muted);
+      border-radius: 8px; padding: .35rem .7rem; font: inherit; font-size: .9rem;
+      cursor: pointer; line-height: 1.2; min-height: 2.2rem;
+    }
+    .settings-card {
+      background: #fff; border: none; border-top: 1px solid var(--line); border-radius: 0;
+      padding: .85rem 0; margin-top: .35rem;
+    }
+    .settings-card h3 { margin: 0 0 .45rem; font-size: 1rem; font-weight: 600; color: #000; }
+    .settings-card .hint { margin: .4rem 0 0; color: #8a8a8a; font-size: .88rem; line-height: 1.5; }
+    .field-input {
+      width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: .55rem .75rem;
+      font: inherit; font-size: 1.02rem; background: #fff; color: var(--ink);
+    }
+    .field-input:focus { outline: none; border-color: #111; }
+    .chip-grid { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .55rem; }
+    .chip-grid button, .check-grid label {
+      border: 1px solid var(--line); background: #fff; color: var(--muted);
+      border-radius: 8px; padding: .4rem .65rem; font: inherit; font-size: .92rem; font-weight: 400; cursor: pointer;
+    }
+    .chip-grid button.on, .check-grid label.on {
+      border-color: #111; color: #111; background: #f5f5f5;
+    }
+    .check-grid { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .45rem; }
+    .check-grid label { display: inline-flex; align-items: center; gap: .35rem; user-select: none; }
+    .check-grid input { accent-color: #111; width: 1rem; height: 1rem; }
+    .settings-actions {
+      display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .9rem;
+      position: sticky; bottom: 0; padding-top: .55rem;
+      background: linear-gradient(180deg, transparent, #fff 35%);
+    }
+    .settings-actions button { flex: 1 1 120px; min-height: 2.6rem; }
+    /* Mobile: continuous white reading list; 16px gutters */
+    @media (max-width: 767px) {
+      .topbar {
+        width: 100%;
+        box-sizing: border-box;
+        padding: calc(.75rem + var(--safe-top)) 16px .35rem;
+      }
+      .shell {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0 16px calc(3rem + var(--safe-bottom));
+      }
+      .modal-panel { border-radius: 12px; max-height: 84vh; margin: 0 16px; }
+      .brand-mini { font-size: 1.1rem; }
+      .brand { font-size: clamp(1.85rem, 8vw, 2.3rem); }
+      .tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tabs button { flex: 0 0 auto; }
+      .field-input { font-size: 16px; }
+      h2 { font-size: 1.4rem; font-weight: 500; }
+      .summary { font-size: 1.05rem; }
+      .analysis { font-size: 1.02rem; }
+      article.item { padding: 1.25rem 0 1.15rem; }
+      article.item + article.item { margin-top: 0; padding-top: 1.25rem; }
+    }
+  
+
+
+    .actions-btns {
+      display: flex; flex-wrap: nowrap; gap: .55rem; width: 100%;
+      align-items: center; justify-content: flex-start;
+    }
+    .actions-btns > .action-link { margin-right: .15rem; align-self: center; }
+    .actions-btns > .deep-btn { flex: 1 1 0; }
+    button.debate-btn.open { background: #111; color: #fff; border-color: #111; }
+    .debate-panel {
+      display: grid; grid-template-rows: 0fr; margin-top: 0; padding: 0 .9rem;
+      background: #fff; border: 1px solid transparent; border-radius: 0;
+      opacity: 0; overflow: hidden;
+      transition: grid-template-rows .14s ease, opacity .12s ease, margin-top .12s ease, padding .12s ease, border-color .12s ease;
+    }
+    .debate-panel > .debate-inner { min-height: 0; overflow: hidden; }
+    .debate-panel.show {
+      grid-template-rows: 1fr; opacity: 1; margin-top: .8rem; padding: .9rem 0 0;
+      border-color: transparent; border-top: 1px solid var(--line);
+    }
+    .debate-label { margin: 0 0 .55rem; font-size: .92rem; font-weight: 500; color: #000; }
+    .debate-hint { margin: 0 0 .75rem; font-size: .82rem; color: #111; line-height: 1.5; }
+    .debate-thread {
+      --av-size: 2.2rem;
+      --av-gap: .55rem;
+      /* Reserve opposite-avatar column only — bubbles must not cross it */
+      --opp-reserve: calc(var(--av-size) + var(--av-gap));
+      display: flex; flex-direction: column; gap: .85rem;
+    }
+    .bubble {
+      display: flex; gap: var(--av-gap); align-items: flex-start;
+      /* Own avatar is inside .bubble; leave room for opposite side only */
+      max-width: calc(100% - var(--opp-reserve));
+      width: auto;
+      box-sizing: border-box;
+    }
+    .bubble.opt { align-self: flex-start; }
+    .bubble.con { align-self: flex-end; flex-direction: row-reverse; }
+    /* 路人甲: opposite side of the previous message — never centered */
+    .bubble.user {
+      max-width: calc(100% - var(--opp-reserve));
+    }
+    .bubble.user.side-left { align-self: flex-start; }
+    .bubble.user.side-right { align-self: flex-end; flex-direction: row-reverse; }
+    .bubble-av {
+      position: relative;
+      flex: 0 0 var(--av-size); width: var(--av-size); height: var(--av-size); border-radius: 999px;
+      overflow: hidden; padding: 0; line-height: 0;
+      border: none; outline: none; box-shadow: none;
+      user-select: none; background: transparent;
+    }
+    .bubble-av svg { display: block; width: 100%; height: 100%; }
+    .bubble.opt .bubble-av,
+    .bubble.con .bubble-av,
+    .bubble.user .bubble-av { border: none; }
+    .bubble-main {
+      min-width: 0; flex: 1 1 auto;
+      max-width: calc(100% - var(--av-size) - var(--av-gap));
+    }
+    .bubble-name { font-size: .8rem; font-weight: 400; margin-bottom: .28rem; letter-spacing: .02em; opacity: .92; }
+    .bubble.opt .bubble-name { color: #8a8a8a; text-align: left; }
+    .bubble.con .bubble-name { color: #8a8a8a; text-align: right; }
+    .bubble.user .bubble-name { color: #8a8a8a; }
+    .bubble.user.side-left .bubble-name { text-align: left; }
+    .bubble.user.side-right .bubble-name { text-align: right; }
+    .bubble-text {
+      margin: 0; padding: .72rem .95rem; border-radius: 12px; border: 1px solid var(--line);
+      font-size: .98rem; line-height: 1.7; font-weight: 400; color: #111;
+      background: #fff;
+      box-sizing: border-box; width: 100%;
+      overflow-wrap: anywhere; word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .bubble.opt .bubble-text { background: #fff; border-color: var(--line); color: #111; border-radius: 4px 14px 14px 14px; }
+    .bubble.con .bubble-text { background: #fff; border-color: var(--line); color: #111; border-radius: 14px 4px 14px 14px; }
+    .bubble.user .bubble-text { background: #fff; border-color: var(--line); color: #111; }
+    .bubble.user.side-left .bubble-text { border-radius: 4px 14px 14px 14px; }
+    .bubble.user.side-right .bubble-text { border-radius: 14px 4px 14px 14px; }
+    .debate-compose {
+      display: flex; flex-direction: row; flex-wrap: nowrap;
+      gap: .45rem; align-items: center; margin-top: 1.05rem;
+      padding-top: 0; border-top: none;
+    }
+    .debate-compose[hidden] { display: none !important; }
+    .debate-compose input {
+      flex: 1 1 auto; min-width: 0; border: 1px solid var(--line); border-radius: 10px;
+      padding: .6rem .8rem; font: inherit; font-size: .98rem; background: #fff; color: var(--ink);
+    }
+    .debate-compose input:focus { outline: none; border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
+    .debate-compose button {
+      flex: 0 0 auto; margin-left: auto; border: 1px solid #111; background: #111; color: #fff;
+      border-radius: 10px; padding: .5rem .95rem; font: inherit; font-size: .95rem; font-weight: 400;
+      cursor: pointer; min-height: 2.45rem; white-space: nowrap;
+    }
+    .debate-compose button:hover { background: #333; }
+    .debate-compose button:disabled { opacity: .55; cursor: default; }
+    .debate-compose input:disabled { opacity: .65; cursor: default; background: #f7f7f7; }
+    .bubble.typing .bubble-text {
+      display: inline-flex; align-items: center; gap: .28rem;
+      min-width: 3.2rem; padding: .78rem 1rem;
+    }
+    .bubble.typing .dot {
+      width: .42rem; height: .42rem; border-radius: 999px; background: #8a8a8a;
+      opacity: .35; animation: debate-dot 1.05s ease-in-out infinite;
+    }
+    .bubble.typing .dot:nth-child(2) { animation-delay: .18s; }
+    .bubble.typing .dot:nth-child(3) { animation-delay: .36s; }
+    @keyframes debate-dot {
+      0%, 80%, 100% { opacity: .28; transform: translateY(0); }
+      40% { opacity: .95; transform: translateY(-2px); }
+    }
+    @media (max-width: 767px) {
+      .actions-btns { flex-wrap: wrap; gap: .5rem .65rem; }
+      .actions-btns > .action-link { flex: 0 0 100%; font-size: .86rem; padding: .1rem 0; }
+      .actions-btns > .deep-btn { flex: 1 1 calc(50% - .35rem); font-size: .86rem; padding: .48rem .55rem; white-space: normal; }
+      .bubble-text { font-size: .95rem; padding: .68rem .88rem; }
+      .debate-compose { flex-wrap: nowrap; }
+      .debate-compose input { font-size: 16px; }
+      .debate-compose button { width: auto; margin-left: auto; }
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; left: 50%; bottom: calc(1.4rem + var(--safe-bottom));
+      transform: translateX(-50%) translateY(12px);
+      z-index: 100; padding: .55rem 1rem; border-radius: 999px;
+      background: #111; color: #fff; font-size: .95rem; font-weight: 400;
+      box-shadow: var(--shadow); opacity: 0; pointer-events: none;
+      transition: opacity .2s ease, transform .22s ease;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .field-input:focus { outline: none; border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
+    .icon-btn { transition: background .15s ease, border-color .15s ease; }
+  </style>
+</head>
+<body>
+  <!-- FEED VIEW -->
+  <div id="view-feed" class="view active">
+    <div class="topbar feed-top">
+      <h1 class="brand-mini">每日风向</h1>
+      <button type="button" class="icon-btn" id="btn-open-settings">个人偏好</button>
+    </div>
+    <div class="shell desktop-feed">
+      <section class="feed" id="feed"></section>
+      <div class="end" id="end">— 今日信息流到底了 —</div>
+      <footer class="page-foot">数据：TrendRadar（上海 2026-11-03）+ 五车道补强。每日 08:00（Asia/Shanghai）按关注摘最新最热 10 条；行业影响为规则引擎解读（非投资建议）。个人偏好保存在本机浏览器。</footer>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-root" id="settings-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="modal-panel" role="document">
+      <div class="modal-head">
+        <h2 id="settings-title">个人偏好</h2>
+        <button type="button" class="modal-close" id="btn-close-settings" aria-label="关闭">关闭</button>
+      </div>
+      <div class="settings-card">
+        <h3>我所在行业</h3>
+        <input id="cfg-industry" class="field-input" type="text" placeholder="例如：半导体封装、云计算运维…" autocomplete="off" enterkeyhint="done" />
+        <div class="chip-grid" id="cfg-industry-presets"></div>
+        <p class="hint">用于每条新闻的「行业影响」分析视角。</p>
+      </div>
+      <div class="settings-card">
+        <h3>关注行业</h3>
+        <div class="chip-grid" id="cfg-follow"></div>
+        <p class="hint">多选。有选择时只显示与关注行业相关的新闻；不选则不过滤行业。</p>
+      </div>
+      <div class="settings-card">
+        <h3>新闻来源</h3>
+        <div class="check-grid" id="cfg-sources"></div>
+        <p class="hint">多选。至少保留一个来源。</p>
+      </div>
+      <div class="settings-actions">
+        <button type="button" class="icon-btn" id="btn-cancel-settings">取消</button>
+        <button type="button" class="icon-btn primary" id="btn-save-settings">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">保存成功</div>
+
+  <script id="data" type="application/json">[{"lanes":["AI","科技"],"region":"国外","platform":"华尔街见闻","hot":true,"time":"2026-11-03 01:53","title":"Anthropic IPO前更新招股书凸显盈利压力：Q3营收近170亿美元、同比增11倍，净亏损扩大92%，算力承诺近9000亿","summary":"华尔街见闻与财联社交叉报道：Anthropic更新招股书显示，第三季度营收约169.56亿美元，同比约增11倍、环比约增47%；净亏损约232.91亿美元，同比扩大约92%，其中含约219亿美元非现金计提，经营性仍处亏损。截至9月30日，算力采购与租赁承诺支出合计约8954亿美元。市场一边惊叹收入爆发，一边盯着巨额算力承诺与亏损扩张，把IPO前叙事推向“增长与兑现”双审。","analysis":"依据修订版S-1披露：AI独角兽进入公开市场前，资本开支承诺已接近万亿美元量级。趋势上，投资者会更盯单位算力收入、经营亏损收窄路径，以及招股路演是否补上关键ARR口径。","url":"https://wallstreetcn.com/articles/3785012","deep":"【发生了什么】\nAnthropic在IPO前更新招股书：Q3营收近170亿美元、净亏损扩大，并首次集中披露约8954亿美元算力承诺。\n\n【为什么重要】\n收入增速极高，但亏损与承诺规模同步放大，说明“卖出AI能力”和“锁住算力供给”仍在赛跑。\n\n【趋势判断（有依据）】\n路演关键观察点：经营亏损是否收敛、承诺合同结构、以及市场对近万亿算力敞口的风险溢价。","topicId":"anthropic_s1","topicLabel":"Anthropic招股书与算力承诺","crossPlatforms":["华尔街见闻","财联社"],"crossCount":2},{"lanes":["AI","科技"],"region":"国外","platform":"财联社","hot":true,"time":"2026-11-02 22:34","title":"1150亿美元“追光”：迈威尔科技宣布全股票收购Lumentum，押注AI光互连","summary":"财联社报道，迈威尔科技（Marvell）宣布以全股票方式收购光通信公司Lumentum，交易企业价值约1150亿美元量级：Lumentum股东每股换约4.5股迈威尔股份，合并后原迈威尔股东持股约67%。官方叙事是把定制芯片/网络处理器与激光、光模块、光交换打通，押注AI数据中心正从“堆算力”转向“堆光互连带宽”。消息后Lumentum大跌、迈威尔跟跌，市场用脚投票质疑估值、稀释与审批。","analysis":"依据交易条款与股价反应：光互连已被定价为AI基建下一瓶颈，但巨型全股票并购会立刻触发稀释与协同兑现压力。趋势是“芯片+光学”整合加速，同时监管与整合节奏会左右板块波动。","url":"https://www.cls.cn/detail/2523031","deep":"【发生了什么】\nMarvell宣布约1150亿美元全股票收购Lumentum，目标是AI数据中心光互连。\n\n【市场怎么读】\n战略逻辑偏顺（光成为吞吐瓶颈），但价格与稀释让股价先杀一刀。\n\n【趋势判断（有依据）】\n后续看：订单协同、毛利路径、中美等监管审查，以及英伟达等生态伙伴态度。","topicId":"marvell_lumentum","topicLabel":"Marvell收购Lumentum","crossPlatforms":["财联社","华尔街见闻"],"crossCount":2},{"lanes":["科技","AI"],"region":"国外","platform":"华尔街见闻","hot":true,"time":"2026-11-03 00:09","title":"苹果上季营收盈利均超预期，但内存成本高企、毛利率收窄、在华业绩逊色、服务增速放缓","summary":"华尔街见闻梳理苹果第四财季：营收约1144.8亿美元、同比约增12%，iPhone约575.8亿美元、Mac约107.9亿美元均超预期；但毛利率回落至约47.9%（含关税退税约1个百分点贡献），服务收入约315.7亿美元增速放缓，在华表现偏弱。管理层给出假日季营收增长约7%–10%的指引，虽高于部分共识下限，却低于更乐观预期；财报后一度小涨，电话会后盘后跌幅一度超4%。","analysis":"依据财报与盘后定价：苹果仍能靠硬件超预期守住基本盘，但市场更惩罚“服务减速+内存成本+高预期落差”。趋势是端侧AI叙事要转化成可持续换机与服务增长，否则权重股会继续放大科技波动。","url":"https://wallstreetcn.com/articles/3785024","deep":"【发生了什么】\n苹果营收盈利超预期，但服务放缓、毛利承压，盘后转跌。\n\n【为何重要】\n它是消费电子与权重定价锚，数字会牵动整体科技风险偏好。\n\n【趋势判断（有依据）】\n观察假日季实际销量、内存成本传导，以及端侧AI是否进入换机理由。","topicId":"apple_fq4","topicLabel":"苹果财报超预期后转跌","crossPlatforms":["华尔街见闻","财联社"],"crossCount":2},{"lanes":["AI","科技"],"region":"国外","platform":"财联社","hot":true,"time":"2026-11-03 06:10","title":"美股收盘：纳指冲高回落收跌1% AI投资回报疑虑升温","summary":"财联社汇总周一美股：纳斯达克综指冲高后回落收跌约1.07%，标普500跌约0.51%，道指涨约0.41%。费城半导体指数跌约3.3%–3.4%，英特尔、AMD等走弱，存储与光通信板块同步承压；资金从科技与能源撤向消费与材料。主线之一是市场继续质疑AI高投入能否换来匹配的自由现金流与回报，叠加并购与融资消息放大波动。","analysis":"依据收盘结构：这不是单纯指数下跌，而是“AI回报疑虑”主导的风格切换。趋势上，能证明订单与利润的标的更抗跌；纯开支叙事与高杠杆新云名字更敏感。","url":"https://www.cls.cn/detail/2523159","deep":"【发生了什么】\n纳指收跌约1%，费半更深跌，AI回报疑虑升温。\n\n【趋势判断（有依据）】\n本周还有更多科技财报与中期选举，波动可能延续；看指引里的资本开支与AI收入披露颗粒度。","topicId":"nasdaq_ai_roi","topicLabel":"纳指回落与AI回报疑虑","crossPlatforms":["财联社","华尔街见闻"],"crossCount":2},{"lanes":["科技"],"region":"国外","platform":"华尔街见闻","hot":false,"time":"2026-11-02 21:51","title":"芯片股拖累美股指，纳指100跌入技术调整，存储、光通信下挫，油价大跌提振黄金大反弹","summary":"华尔街见闻盘后复盘：芯片股拖累美股，纳斯达克100跌入技术性调整区间；存储与光通信板块下挫，与AI基建链条波动共振。同一交易日，国际油价因美伊谈判预期大幅回落，黄金获得提振。科技与地缘两条线同时定价，造成“芯片弱、黄金强”的资产轮动。","analysis":"依据板块表现：AI硬件贝塔仍在，但资金已开始用技术调整与板块轮动表达谨慎。趋势是存储/光学作为AI中游，会继续放大财报与并购冲击。","url":"https://wallstreetcn.com/articles/3784983","deep":"【发生了什么】\n芯片拖累指数，纳指100进入技术调整；存储与光通信走弱。\n\n【趋势判断（有依据）】\n把调整当风险释放还是趋势反转，要看后续龙头财报与订单。","topicId":"chip_tech_adjust","topicLabel":"芯片拖累与技术调整","crossPlatforms":["华尔街见闻"],"crossCount":1},{"lanes":["AI","科技"],"region":"国外","platform":"华尔街见闻","hot":false,"time":"2026-11-03 07:08","title":"Palantir三季度营收翻倍，美国商业收入首超政府收入，全年指引大幅上调","summary":"华尔街见闻早餐援引最新财报：Palantir第三季度营收约23.13亿美元，同比约增96%，超市场预期；美国商业收入约9.84亿美元、同比约增148%，首次超过美国政府收入约9.53亿美元。公司上调全年营收指引至约85.30亿–85.34亿美元。亮点是商业化加速，但盘后股价仍波动，说明高增长也被更高预期“定价满了”。","analysis":"依据分部收入交叉：AI应用层里，能把政府能力复制到商业合同的公司开始兑现。趋势是市场会追问增速可持续性与利润质量，而不仅是营收翻倍标题。","url":"https://wallstreetcn.com/articles/3785026","deep":"【发生了什么】\nPalantir Q3营收近翻倍，美国商业收入首次超过政府。\n\n【趋势判断（有依据）】\n观察商业续约、扩张速度，以及高估值下任何增速放缓是否被重罚。","topicId":"palantir_q3","topicLabel":"Palantir商业收入反超","crossPlatforms":["华尔街见闻"],"crossCount":1},{"lanes":["AI"],"region":"国内","platform":"财联社","hot":false,"time":"2026-11-02 20:30","title":"李佳琦双十一卖Token：半小时卖出10万份千问办公会员","summary":"财联社报道，李佳琦双11直播间上架“Token”品类并售卖通义千问等办公会员，半小时卖出约10万份。天猫此前已上线Token充值中心，接入DeepSeek、阿里云、智谱、Kimi等；Token首次以独立品类出现在头部直播间，被解读为模型用量正在变成可计量、可零售的“水电煤”式商品。","analysis":"依据成交与平台基建：国内AI商业化出现消费端计量售卖入口。趋势是Token定价、分成与品牌旗舰店会更快渗透，但也考验留存与真实调用，而不仅是直播GMV。","url":"https://www.cls.cn/detail/2522982","deep":"【发生了什么】\n头部直播间开卖Token/模型会员，半小时10万份量级。\n\n【趋势判断（有依据）】\n后续看复购、实际调用与厂商结算，判断这是渠道创新还是一次性营销。","topicId":"token_livestream","topicLabel":"直播间卖Token","crossPlatforms":["财联社"],"crossCount":1},{"lanes":["AI","科技"],"region":"国外","platform":"华尔街见闻","hot":false,"time":"2026-11-03 07:08","title":"港交所推出人工智能指数，覆盖芯片、基建、模型与应用40只港股","summary":"华尔街见闻早餐称，港交所推出人工智能指数，选取约40家港股AI相关公司，覆盖芯片、基础设施、模型与应用；成分既包括阿里巴巴、百度、腾讯，也包括智谱、MiniMax等新上市公司。编制更看重研发投入、资本开支与收入增长，不对盈利能力做基本面硬门槛，并对芯片/基建/模型环节给予更大权重空间。","analysis":"依据指数规则：资本市场正在给港股AI产业链一条可交易基准。趋势是被动资金与主题产品可能跟进，但“不考核盈利”也会放大波动与泡沫争议。","url":"https://wallstreetcn.com/articles/3785026","deep":"【发生了什么】\n港交所推出覆盖40只成分的AI指数。\n\n【趋势判断（有依据）】\n关注后续是否挂钩ETF/衍生品，以及成分定期调整如何影响流动性。","topicId":"hkex_ai_index","topicLabel":"港交所AI指数","crossPlatforms":["华尔街见闻"],"crossCount":1},{"lanes":["军事"],"region":"国外","platform":"财联社","hot":true,"time":"2026-11-03 02:20","title":"伊朗最高领袖释放与美国进一步谈判信号 国际油价应声大跌金价跳涨2%","summary":"财联社与华尔街见闻交叉：伊朗最高领袖释放授权政府推进对美谈判的信号后，国际油价创阶段最大跌幅之一，黄金跳涨。此前伊方曾提出若美方落实条件可较快重启安排；特朗普亦有“不急于中选后动武”等表态，但伊媒也传出沟通仍可能卡壳。市场把霍尔木兹航运风险溢价迅速重定价。","analysis":"依据油价与官方信号：美伊叙事从“开战溢价”切到“谈判窗口”。趋势是选后48–72小时仍是敏感期——口头授权不等于协议，油运与金价会继续双向波动。","url":"https://www.cls.cn/detail/2523079","deep":"【发生了什么】\n伊朗最高领袖释放谈判授权信号，油价大跌、金价上涨。\n\n【为何重要】\n霍尔木兹关系到全球油运与通胀预期。\n\n【趋势判断（有依据）】\n盯履约动作、油轮通行与是否再现打击传言，而不是只看表态。","topicId":"iran_talks_oil","topicLabel":"伊美谈判信号与油价","crossPlatforms":["财联社","华尔街见闻","知乎"],"crossCount":3},{"lanes":["军事","AI"],"region":"国外","platform":"新华网","hot":false,"time":"2026-11-03 05:58","title":"德英将深化人工智能等领域防务合作","summary":"新华社柏林电：德国国防部长与英国国防大臣在柏林会谈后发表联合声明，同意深化人工智能、远程精确打击及太空等领域防务合作；将加强网络安全与信息共享的“网络灯塔项目”拓展至人工智能，并推进相关研发试验。声明还提到海上鱼雷采购合作、无人机与协同作战，以及卫星通信、地球观测、太空态势感知等方向。","analysis":"依据联合声明：欧洲主要防务伙伴把AI与太空感知写进双边合作主轴。趋势是军用AI从概念验证走向联合试验与采购清单，地球观测与SSA（太空态势感知）会同步受益。","url":"https://www.news.cn/20261103/96514c473d1445ec9ad18e3e4fc3bbf5/c.html","deep":"【发生了什么】\n德英宣布在AI、远程打击、太空/地球观测等方向加深防务合作。\n\n【趋势判断（有依据）】\n后续看联合项目预算、试验场次与是否形成可出口的标准装备包。","topicId":"de_uk_ai_defense","topicLabel":"德英AI防务合作","crossPlatforms":["新华网"],"crossCount":1},{"lanes":["军事","AI"],"region":"国外","platform":"DIGITIMES","hot":false,"time":"2026-11-03 02:14","title":"北约让5G基站变身感测器，AI数小时打通跨国反无人机链路","summary":"DIGITIMES报道，北约在拉脱维亚举行的“数字骨干实验”（DiBaX 2026）中展示：商用5G、卫星链路与代理式AI可支援前线部队，甚至把5G基站转成被动感测器；演习中AI在数小时尺度上协助打通跨国反无人机协同链路。重点不是单点武器，而是通信感知与决策链路的拼装速度。","analysis":"依据演习公开信息：反无人作战正从“导弹拦截”扩展到“商用网络+AI代理”的体系战。趋势是民用通信基础设施的军事复用与防护，将成为北约数字化战场标准议题。","url":"https://www.digitimes.com.tw/tech/dt/n/shwnws.asp?id=0000773286_MZP1ITLC9BGX1G5LYWEJ3","deep":"【发生了什么】\n北约演习展示5G基站被动感知+AI代理的反无人机链路。\n\n【趋势判断（有依据）】\n观察后续是否写入成员国采购与频谱/基站防护规范。","topicId":"nato_diba_x","topicLabel":"北约AI反无人机链路","crossPlatforms":["DIGITIMES"],"crossCount":1},{"lanes":["遥感"],"region":"国内","platform":"云南发布","hot":true,"time":"2026-11-03 09:30","title":"云南“彩云星座”三星组网建成：光学+高光谱+SAR，本土卫星事业零的突破","summary":"省级发布会宣布：彩云星座三颗定制卫星全部入轨组网——彩云光学01星、定量高光谱智算卫星彩云高光谱01星，以及适配云南低纬度的中倾角SAR卫星彩云SAR01星。官方称可实现星轨自主管控与任务规划，服务地质灾害、林草生态、口岸与中老铁路等监测；SAR可支持毫米级形变感知，灾后力争小时级成像到交付。","analysis":"依据组网能力表述：地方遥感从“买数据”转向“造数据、管数据、用数据”。趋势是中倾角SAR+光学/高光谱组合会在西南多云雨山区形成差异化优势，但数据开放与产业变现仍处早期。","url":"https://www.ynmzly.com/mobile/content/37-19396.html","deep":"【发生了什么】\n云南彩云星座光学/高光谱/SAR三星组网，宣称本土卫星零突破。\n\n【趋势判断（有依据）】\n看补星节奏、行业订单，以及数据产品何时对外开放。","topicId":"caiyun_constellation","topicLabel":"彩云星座三星组网","crossPlatforms":["云南发布"],"crossCount":1},{"lanes":["遥感"],"region":"国外","platform":"泰伯网","hot":false,"time":"2026-11-03 10:42","title":"Rocket Lab Electron将日本iQPS的QPS-SAR-20雷达卫星送入约575公里轨道","summary":"泰伯网援引任务信息：北京时间2026年11月3日0时41分，Rocket Lab Electron火箭从新西兰马希亚半岛升空，将iQPS的QPS-SAR-20（WADATSUMI-II）合成孔径雷达卫星送入近地轨道。这是Rocket Lab第10次为iQPS发射；iQPS目标在2028年5月前后形成24星星座，并继续加密，以求把多数指定区域平均观测间隔压到约10分钟量级。","analysis":"依据发射与星座规划：商业SAR正以高频重访争夺时间敏感监测市场。趋势是雷达星座比拼的是平均重访与任务响应，而不只是单星分辨率。","url":"https://www.taibo.cn/newsflashes/33385953","deep":"【发生了什么】\nElectron成功发射QPS-SAR-20，服务iQPS地球观测星座扩张。\n\n【趋势判断（有依据）】\n关注24星节点兑现与10分钟级重访是否可商业售卖。","topicId":"qps_sar20","topicLabel":"QPS-SAR-20入轨","crossPlatforms":["泰伯网"],"crossCount":1},{"lanes":["遥感","AI"],"region":"国外","platform":"SpaceNews","hot":false,"time":"2026-11-02 20:00","title":"美情报官员：未来间谍卫星设计或围绕AI分析需求，而非传统人工判读","summary":"SpaceNews报道，美国高级情报官员提出：随着AI承担更多影像情报分析，未来侦察卫星可能围绕算法需求来设计，而不是优先服务人类分析员的传统工作流。这意味着载荷、下行、星上处理与地面流水线会一起重排，间谍卫星“拍什么、传什么、存什么”或被AI工作负载重新定义。","analysis":"依据官员公开表述：遥感军用侧正从“人看图”转向“机读优先”。趋势是星上算力、数据筛选与人机协同标准会进入下一代卫星需求书。","url":"https://spacenews.com/spy-satellite-designs-could-change-as-ai-takes-on-more-intelligence-analysis/","deep":"【发生了什么】\n美方官员讨论以AI分析需求倒推间谍卫星设计。\n\n【趋势判断（有依据）】\n商业与国防遥感都会更强调可机读数据与在轨预处理。","topicId":"spy_sat_ai","topicLabel":"间谍卫星AI化设计","crossPlatforms":["SpaceNews"],"crossCount":1},{"lanes":["GitHub 开源","AI"],"region":"国外","platform":"GitHub","hot":true,"time":"2026-11-03 06:00","title":"GitHub日榜：vercel-labs/agent-desktop 靠无障碍树操控桌面，日增约2275星","summary":"北京时间2026-11-03前后，GitHub热榜上 vercel-labs/agent-desktop 强势居前：它让AI代理通过操作系统无障碍树（accessibility tree）读取并操作桌面应用，快照返回带引用号的结构化元素，而不是靠截图视觉识别。同日 pingdotgg/t3code 等远程控代理工具也高位，显示“让Agent用电脑”分成读结构与看屏幕两条路线。","analysis":"依据日榜结构：开源焦点从模型权重转向可靠的计算机使用接口。趋势是无障碍树路线成本更低、动作更可重试，但依赖应用把标签做完整；隐私快照外泄风险同步上升。","url":"https://github.com/vercel-labs/agent-desktop","deep":"【发生了什么】\nagent-desktop以无障碍树路线冲上日榜，强调不看截图也能操控桌面。\n\n【趋势判断（有依据）】\n企业会评估：权限最小化、审计日志、以及与截图视觉方案的互补。","topicId":"agent_desktop","topicLabel":"开源Agent桌面操控","crossPlatforms":["GitHub"],"crossCount":1},{"lanes":["GitHub 开源","AI"],"region":"国外","platform":"GitHub","hot":false,"time":"2026-11-03 06:05","title":"GitHub热榜：pingdotgg/t3code 远程控制本机编程代理，日增居前","summary":"同日热榜上，pingdotgg/t3code 继续以移动端/Web/桌面面板远程控制本机编程代理（对接Claude Code、Codex等）获得大量星标。它和agent-desktop一起，把“人在回路遥控Agent”做成显式产品形态：开发者不必盯着同一台机器，也能派任务、看进度、回收结果。","analysis":"依据仓库定位与热度：Agent基建竞争进入“控制面”层。趋势是远程面板会标配鉴权、会话隔离与成本看板，否则企业难上线。","url":"https://github.com/pingdotgg/t3code","deep":"【发生了什么】\nt3code以远程控代理面板冲榜。\n\n【趋势判断（有依据）】\n观察其与各类编码Agent的适配深度，以及安全默认值是否跟上星标速度。","topicId":"t3code_remote","topicLabel":"远程编程代理控制面","crossPlatforms":["GitHub"],"crossCount":1},{"lanes":["GitHub 开源","AI"],"region":"国外","platform":"GitHub","hot":false,"time":"2026-11-03 06:10","title":"claude-mem 仍居日榜前列：为AI代理提供跨会话持久记忆压缩","summary":"thedotmack/claude-mem 在11月3日日榜继续靠前：把代理会话中的操作与上下文压缩后注入未来会话，减少“每次从零开始”。它和桌面操控、远程控制面一起，构成当日开源Agent底座三件套——记忆、环境、控制。","analysis":"依据连续两日热度：记忆层正在成为Agent标配组件。趋势是私有化部署、脱敏与可撤回会成为企业采购门槛。","url":"https://github.com/thedotmack/claude-mem","deep":"【发生了什么】\n跨会话记忆组件连续冲榜。\n\n【趋势判断（有依据）】\n记忆越强，隐私与合规成本越高；开源协议与托管策略会分化。","topicId":"claude_mem_1103","topicLabel":"Agent跨会话记忆","crossPlatforms":["GitHub"],"crossCount":1},{"lanes":["GitHub 开源","遥感"],"region":"国外","platform":"GitHub","hot":false,"time":"2026-11-03 08:00","title":"开源GEOINT工具 satellite-mcp 持续受关注：卫星影像与冲突监测工具交给Agent","summary":"badchars/satellite-mcp 继续在开源遥感/OSINT圈传播：以MCP形式暴露大量卫星影像与地理空间情报工具，覆盖Sentinel-2、Landsat等检索及冲突监测相关能力，让智能体直接调用遥感数据接口。与今日商业SAR发射、地方星座组网新闻同屏，形成“上天组网 + 地面Agent化调用”的对照。","analysis":"依据工具形态：遥感消费侧正在API化、Agent化。趋势是开源会加速普及，同时迫使机构加强访问控制、计费与溯源。","url":"https://github.com/badchars/satellite-mcp","deep":"【发生了什么】\n开源MCP把卫星与GEOINT能力暴露给Agent。\n\n【趋势判断（有依据）】\n与高频SAR星座结合后，自动监测工作流会更常见，合规压力同步上升。","topicId":"satellite_mcp_1103","topicLabel":"开源卫星MCP","crossPlatforms":["GitHub"],"crossCount":1}]</script>
+  <script>
+    const PRESETS = ["AI", "科技", "军事", "遥感", "GitHub 开源"];
+        const INDUSTRY_ALIASES = {
+      "AI": ["AI", "人工智能", "大模型", "模型", "算力", "推理", "智能体", "Agent", "多模态", "GPU", "DeepSeek", "OpenAI", "Claude", "LongCat"],
+      "科技": ["科技", "半导体", "芯片", "互联网", "云", "数据中心", "苹果", "英伟达", "AMD", "台积电", "华为", "英特尔", "微软", "存储", "HBM", "iPhone", "科网"],
+      "军事": ["军事", "国防", "导弹", "战机", "台海", "俄乌", "伊朗", "武器", "侦察", "霍尔木兹", "美伊", "F-15", "F-16", "北约"],
+      "遥感": ["遥感", "卫星", "对地观测", "SAR", "航天", "星座", "光学", "雷达卫星", "空天", "天基", "GEOINT", "低轨"],
+      "GitHub 开源": ["GitHub", "开源", "Trending", "仓库", "star", "Release", "MCP", "Harness", "superagent", "llama", "vLLM"],
+    };
+        const TOPIC_RULES = {
+      anthropic_s1: { tags:["AI", "科技", "云计算", "金融", "投资"], labels:["观察", "风暴"], storm:true, disrupt:false, gist:(ind)=>`对「${ind}」偏高压观察：收入爆发与近万亿算力承诺并行，IPO定价更敏感。` },
+      marvell_lumentum: { tags:["AI", "科技", "半导体", "光通信", "数据中心"], labels:["颠覆", "风暴"], storm:true, disrupt:true, gist:(ind)=>`对「${ind}」偏整合风暴：光互连战略顺，但稀释与监管会先制造波动。` },
+      apple_fq4: { tags:["科技", "消费电子", "苹果", "端侧", "AI"], labels:["观察"], storm:false, disrupt:false, gist:(ind)=>`对「${ind}」偏事件驱动：超预期仍可能因服务与指引落差被砸。` },
+      nasdaq_ai_roi: { tags:["AI", "科技", "半导体", "金融", "投资"], labels:["负向", "风暴"], storm:true, disrupt:false, gist:(ind)=>`对「${ind}」偏负向：资金用脚投票质疑AI开支回报。` },
+      chip_tech_adjust: { tags:["科技", "半导体", "芯片", "存储", "光通信"], labels:["负向"], storm:false, disrupt:false, gist:(ind)=>`对「${ind}」偏调整：中游存储/光学放大AI硬件波动。` },
+      palantir_q3: { tags:["AI", "科技", "软件", "政府", "商业"], labels:["正向"], storm:false, disrupt:false, gist:(ind)=>`对「${ind}」偏正向：商业收入反超说明应用层合同在兑现。` },
+      token_livestream: { tags:["AI", "消费", "电商", "大模型"], labels:["正向", "颠覆"], storm:false, disrupt:true, gist:(ind)=>`对「${ind}」偏渠道创新：Token开始被零售化，但要看复购与真实调用。` },
+      hkex_ai_index: { tags:["AI", "科技", "金融", "港股"], labels:["观察"], storm:false, disrupt:false, gist:(ind)=>`对「${ind}」偏主题观察：港股AI有了可交易基准，波动也可能被放大。` },
+      iran_talks_oil: { tags:["军事", "能源", "航运", "伊朗"], labels:["风暴"], storm:true, disrupt:false, gist:(ind)=>`对「${ind}」偏风险再定价：谈判信号迅速冲击油运与贵金属。` },
+      de_uk_ai_defense: { tags:["军事", "AI", "国防", "太空", "遥感"], labels:["正向"], storm:false, disrupt:false, gist:(ind)=>`对「${ind}」偏合作正向：欧洲把AI与地球观测写入防务主轴。` },
+      nato_diba_x: { tags:["军事", "AI", "通信", "无人机", "5G"], labels:["颠覆"], storm:false, disrupt:true, gist:(ind)=>`对「${ind}」偏体系颠覆：反无人作战拼装商用网络与AI代理。` },
+      caiyun_constellation: { tags:["遥感", "卫星", "SAR", "高光谱", "防灾"], labels:["正向"], storm:false, disrupt:false, gist:(ind)=>`对「${ind}」偏正向：地方星座组网提升自主监测能力。` },
+      qps_sar20: { tags:["遥感", "卫星", "SAR", "航天"], labels:["正向"], storm:false, disrupt:false, gist:(ind)=>`对「${ind}」偏星座扩容：商业SAR继续卷重访频率。` },
+      spy_sat_ai: { tags:["遥感", "AI", "军事", "情报"], labels:["颠覆"], storm:false, disrupt:true, gist:(ind)=>`对「${ind}」偏设计颠覆：侦察卫星需求书或按AI工作负载重写。` },
+      agent_desktop: { tags:["GitHub 开源", "AI", "Agent", "桌面"], labels:["正向", "颠覆"], storm:false, disrupt:true, gist:(ind)=>`对「${ind}」偏工具颠覆：无障碍树路线降低Agent操控电脑成本。` },
+      t3code_remote: { tags:["GitHub 开源", "AI", "Agent", "开发工具"], labels:["正向"], storm:false, disrupt:false, gist:(ind)=>`对「${ind}」偏生态正向：远程控制面成为编程代理标配讨论。` },
+      claude_mem_1103: { tags:["GitHub 开源", "AI", "Agent", "记忆"], labels:["正向"], storm:false, disrupt:false, gist:(ind)=>`对「${ind}」偏基建正向：跨会话记忆正在标准化。` },
+      satellite_mcp_1103: { tags:["遥感", "GitHub 开源", "GEOINT", "MCP"], labels:["颠覆"], storm:false, disrupt:true, gist:(ind)=>`对「${ind}」偏工具颠覆：遥感检索与情报分析加速Agent化。` },
+    };
+    const CLICKBAIT_RE = /暴跌|狂泻|创纪录|砸|无理|警惕|怎么看|！|!|最大单月|很快结束/;
+    const STRONG = new Set(["联合早报","华尔街见闻","财联社","澎湃新闻"]);
+    const ALL = JSON.parse(document.getElementById("data").textContent);
+    // —— Live SiliconFlow via same-origin proxy (key never in HTML) ——
+    const LIVE_API = "/api/generate";
+    const liveParse = Object.create(null);   // title -> {status, read, subtext, text, err}
+    const liveImpact = Object.create(null);  // title\0industry -> {status, positive:{title,detail}, negative, observe, confidence, err}
+    const liveDeep = Object.create(null);
+    const liveDebateSeed = Object.create(null); // title -> {status, turns, err}
+    const liveInflight = Object.create(null);
+    const parseViewportReady = Object.create(null); // title -> true once title+summary fully seen
+    const parsePartVisible = Object.create(null);   // title -> {title:bool, summary:bool}
+    let parseViewportObserver = null;
+    function liveKey(mode, title) { return mode + "\0" + title; }
+    function impactCacheKey(title, industry) {
+      return String(title || "") + "\0" + String(industry || "").trim();
+    }
+    /** Fields the server uses for cross-user disk cache (topicId|url + mode [+ industry]). */
+    function newsCacheFields(it) {
+      return {
+        topicId: String((it && it.topicId) || ""),
+        url: String((it && it.url) || ""),
+        title: String((it && it.title) || ""),
+        summary: String((it && it.summary) || ""),
+        topicLabel: String((it && it.topicLabel) || "")
+      };
+    }
+    async function apiGenerate(payload) {
+      const res = await fetch(LIVE_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        cache: "no-store"
+      });
+      let data = null;
+      try { data = await res.json(); } catch (_) { data = null; }
+      if (!res.ok) {
+        const msg = (data && data.error) ? String(data.error) : ("HTTP " + res.status);
+        throw new Error(msg);
+      }
+      return data;
+    }
+    /** Strip ... / … / 。。。; rewrite incomplete trailing phrases. AI conclusions only. */
+    function banEllipsis(s, closeSentence) {
+      let t = String(s ?? "");
+      if (!t) return t;
+      t = t.replace(/\.{3,}/g, "，");
+      t = t.replace(/…+/g, "，");
+      t = t.replace(/⋯+/g, "，");
+      t = t.replace(/．{3,}/g, "，");
+      t = t.replace(/。{2,}/g, "。");
+      t = t.replace(/，{2,}/g, "，");
+      t = t.replace(/，([。！？!?])/g, "$1");
+      t = t.replace(/^，+/g, "");
+      const fixLine = (ln) => {
+        let s2 = ln.replace(/\s+$/g, "");
+        if (!s2.trim()) return s2;
+        s2 = s2.replace(/[，、；;：:\s]+$/g, "");
+        s2 = s2.replace(/(?:的|与|和|及|或|而|且|并|就|都|也|还|仍|再|更|很|较)$/u, "");
+        s2 = s2.replace(/[，、；;：:\s]+$/g, "");
+        if (closeSentence && s2.trim() && !/[。！？!?）」』】"”']$/.test(s2)) {
+          s2 += "。";
+        }
+        return s2;
+      };
+      if (t.includes("\n")) return t.split("\n").map(fixLine).join("\n");
+      return fixLine(t);
+    }
+    function normalizeParsePayload(data) {
+      let read = String((data && data.read) || "").trim();
+      let subtext = String((data && data.subtext) || "").trim();
+      let text = String((data && data.text) || "").trim();
+      if ((!read || !subtext) && text) {
+        const lines = text.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+        for (const ln of lines) {
+          const mRead = ln.match(/^(?:✨\s*)?(?:AI\s*秒读)[:：\s]*(.*)$/i);
+          const mSub = ln.match(/^(?:💡\s*)?(?:潜台词)[:：\s]*(.*)$/);
+          if (mRead && !read) read = mRead[1].trim();
+          else if (mSub && !subtext) subtext = mSub[1].trim();
+        }
+        if (!read && !subtext) {
+          const parts = text.split(/(?<=[。！？!?])\s*/).filter(Boolean);
+          read = (parts[0] || text).trim();
+          subtext = (parts[1] || "").trim();
+        }
+      }
+      read = banEllipsis(read, true);
+      subtext = banEllipsis(subtext, true);
+      text = banEllipsis(text, false);
+      return { read, subtext, text };
+    }
+    function ensureLiveParse(it) {
+      const key = it.title;
+      const st = liveParse[key];
+      if (st && (st.status === "ok" || st.status === "loading")) return;
+      if (st && st.status === "err") { /* allow retry */ }
+      liveParse[key] = { status: "loading", read: "", subtext: "", text: "", err: "" };
+      const ik = liveKey("parse", key);
+      if (liveInflight[ik]) return liveInflight[ik];
+      liveInflight[ik] = apiGenerate({
+        mode: "parse",
+        ...newsCacheFields(it)
+      }).then((data) => {
+        const n = normalizeParsePayload(data);
+        liveParse[key] = {
+          status: "ok",
+          read: n.read,
+          subtext: n.subtext,
+          text: n.text || ((n.read ? ("✨ AI 秒读：" + n.read) : "") + (n.subtext ? ("\n💡 潜台词：" + n.subtext) : "")),
+          err: ""
+        };
+        patchParseDom(key);
+      }).catch((e) => {
+        liveParse[key] = { status: "err", read: "", subtext: "", text: "", err: String(e.message || e) };
+        patchParseDom(key);
+      }).finally(() => { delete liveInflight[ik]; });
+      return liveInflight[ik];
+    }
+    function normalizeImpactSlot(val, fallbackTitle, fallbackDetail) {
+      let title = "", detail = "";
+      if (val && typeof val === "object") {
+        title = String(val.title || val.main || "").trim();
+        detail = String(val.detail || val.why || val.desc || "").trim();
+      } else if (typeof val === "string") {
+        const s = val.trim();
+        if (s.includes("|")) {
+          const i = s.indexOf("|");
+          title = s.slice(0, i).trim();
+          detail = s.slice(i + 1).trim();
+        } else {
+          title = s;
+        }
+      }
+      title = banEllipsis(title, true);
+      detail = banEllipsis(detail, true);
+      return {
+        title: title || fallbackTitle || "—",
+        detail: detail || fallbackDetail || ""
+      };
+    }
+    function emptyImpactSlots() {
+      return {
+        positive: { title: "—", detail: "" },
+        negative: { title: "—", detail: "" },
+        observe: { title: "—", detail: "" },
+        confidence: NaN
+      };
+    }
+    function ensureLiveImpact(it) {
+      const industry = String(prefs.industry || "").trim();
+      if (!industry) return;
+      const ck = impactCacheKey(it.title, industry);
+      const st = liveImpact[ck];
+      if (st && (st.status === "ok" || st.status === "loading")) return;
+      liveImpact[ck] = {
+        status: "loading",
+        positive: { title: "", detail: "" },
+        negative: { title: "", detail: "" },
+        observe: { title: "", detail: "" },
+        confidence: 0,
+        err: ""
+      };
+      const ik = liveKey("impact", ck);
+      if (liveInflight[ik]) return liveInflight[ik];
+      liveInflight[ik] = apiGenerate({
+        mode: "impact",
+        ...newsCacheFields(it),
+        industry
+      }).then((data) => {
+        let confidence = Number(data.confidence);
+        if (!Number.isFinite(confidence)) confidence = 0;
+        confidence = Math.max(0, Math.min(100, Math.round(confidence)));
+        liveImpact[ck] = {
+          status: "ok",
+          positive: normalizeImpactSlot(data.positive, "暂无明显正向机会", "与该行业直接利好有限。"),
+          negative: normalizeImpactSlot(data.negative, "暂无明显负向风险", "未见直接冲击路径。"),
+          observe: normalizeImpactSlot(data.observe, "关联有限，继续观察", "交叉核验后再判断。"),
+          confidence,
+          err: ""
+        };
+        patchImpactDom(it.title);
+      }).catch((e) => {
+        liveImpact[ck] = {
+          status: "err",
+          positive: { title: "", detail: "" },
+          negative: { title: "", detail: "" },
+          observe: { title: "", detail: "" },
+          confidence: 0,
+          err: String(e.message || e)
+        };
+        patchImpactDom(it.title);
+      }).finally(() => { delete liveInflight[ik]; });
+      return liveInflight[ik];
+    }
+    function kickViewportLive(it) {
+      if (!it || !it.title) return;
+      // Cache short-circuits: re-scroll must not re-call SiliconFlow
+      ensureLiveParse(it);
+      patchParseDom(it.title);
+      if (String(prefs.industry || "").trim()) {
+        ensureLiveImpact(it);
+        patchImpactDom(it.title);
+      }
+    }
+    function unwrapWholeBold(s) {
+      let t = String(s ?? "").trim();
+      if (!t) return t;
+      const full = t.match(/^\*\*([^*]{1,120})\*\*$/);
+      if (full) return full[1].trim();
+      // unwrap long spans (>12 chars) — clauses, not keywords/numbers
+      t = t.replace(/\*\*([^*]+)\*\*/g, (m, inner) => (String(inner).length > 12 ? inner : m));
+      return t;
+    }
+    function formatParseBold(s) {
+      const parts = unwrapWholeBold(s).split(/\*\*/);
+      let out = "";
+      for (let i = 0; i < parts.length; i++) {
+        const chunk = parts[i];
+        if (i % 2 === 1) {
+          if (chunk && chunk.length <= 12) out += "<strong>" + esc(chunk) + "</strong>";
+          else out += esc(chunk || "");
+        } else out += esc(chunk);
+      }
+      return out;
+    }
+    function parseQuoteHtml(readText, subText, opts) {
+      const o = opts || {};
+      const readCls = o.errRead ? ' class="live-err"' : "";
+      const subCls = o.errSub ? ' class="live-err"' : "";
+      const read = readText == null ? "—" : readText;
+      const sub = subText == null ? "—" : subText;
+      return (
+        '<p class="parse-line read"><span class="parse-kicker">✨ AI 秒读：</span><span' + readCls + ">" + read + "</span></p>" +
+        '<p class="parse-line sub"><span class="parse-kicker">💡 潜台词：</span><span' + subCls + ">" + sub + "</span></p>"
+      );
+    }
+    function patchParseDom(key) {
+      const art = document.querySelector('article.item[data-key="' + CSS.escape(key) + '"]');
+      if (!art) return;
+      const el = art.querySelector("[data-live-parse]");
+      if (!el) return;
+      const st = liveParse[key];
+      if (!st) {
+        el.classList.remove("live-loading");
+        el.style.cursor = "";
+        el.onclick = null;
+        el.innerHTML = parseQuoteHtml("—", "—");
+        return;
+      }
+      if (st.status === "loading") {
+        el.classList.add("live-loading");
+        el.innerHTML = parseQuoteHtml("生成中", "—");
+      } else if (st.status === "err") {
+        el.classList.remove("live-loading");
+        el.innerHTML = parseQuoteHtml("暂时不可用，点此重试", "—", { errRead: true });
+        el.style.cursor = "pointer";
+        el.onclick = () => {
+          delete liveParse[key];
+          const it = ALL.find(x => x.title === key);
+          if (it) { ensureLiveParse(it); patchParseDom(key); }
+        };
+      } else {
+        el.classList.remove("live-loading");
+        el.style.cursor = "";
+        el.onclick = null;
+        el.innerHTML = parseQuoteHtml(
+          formatParseBold(banEllipsis(st.read || st.text || "—", true)),
+          formatParseBold(banEllipsis(st.subtext || "—", true))
+        );
+      }
+    }
+    function impactRowsHtml(st) {
+      const slot = (val, fbTitle) => normalizeImpactSlot(val, fbTitle || "—", "");
+      const rows = [
+        { tag: "正向", slot: slot(st && st.positive, "—") },
+        { tag: "负向", slot: slot(st && st.negative, "—") },
+        { tag: "观察", slot: slot(st && st.observe, "—") },
+      ];
+      const body = rows.map((r) => {
+        const detail = r.slot.detail
+          ? `<p class="impact-detail">${esc(r.slot.detail)}</p>`
+          : `<p class="impact-detail"></p>`;
+        return (
+          `<div class="impact-row">` +
+            `<div class="impact-body">` +
+              `<p class="impact-title"><span class="impact-tag">『${esc(r.tag)}』</span>${esc(String(r.slot.title || "").replace(/\*\*/g, ""))}</p>` +
+              detail +
+            `</div>` +
+          `</div>`
+        );
+      }).join("");
+      const conf = (st && Number.isFinite(Number(st.confidence)))
+        ? `<div class="impact-conf">此风向由AI生成，置信度${Math.round(Number(st.confidence))}%</div>`
+        : `<div class="impact-conf"></div>`;
+      return `<div class="impact-rows">${body}</div>${conf}`;
+    }
+    function patchImpactDom(titleKey) {
+      const industry = String(prefs.industry || "").trim();
+      if (!industry) return;
+      const art = document.querySelector('article.item[data-key="' + CSS.escape(titleKey) + '"]');
+      if (!art) return;
+      const el = art.querySelector("[data-live-impact]");
+      if (!el) return;
+      const st = liveImpact[impactCacheKey(titleKey, industry)];
+      el.classList.remove("live-loading", "live-err");
+      el.style.cursor = "";
+      el.onclick = null;
+      if (!st) {
+        el.innerHTML = impactRowsHtml(emptyImpactSlots());
+        return;
+      }
+      if (st.status === "loading") {
+        el.classList.add("live-loading");
+        el.innerHTML = impactRowsHtml({
+          positive: { title: "生成中", detail: "" },
+          negative: { title: "生成中", detail: "" },
+          observe: { title: "生成中", detail: "" },
+          confidence: NaN
+        });
+      } else if (st.status === "err") {
+        el.classList.add("live-err");
+        el.innerHTML = impactRowsHtml({
+          positive: { title: "暂时不可用，点此重试", detail: "" },
+          negative: { title: "—", detail: "" },
+          observe: { title: "—", detail: "" },
+          confidence: NaN
+        });
+        el.style.cursor = "pointer";
+        el.onclick = () => {
+          delete liveImpact[impactCacheKey(titleKey, industry)];
+          const it = ALL.find(x => x.title === titleKey);
+          if (it) { ensureLiveImpact(it); patchImpactDom(titleKey); }
+        };
+      } else {
+        el.innerHTML = impactRowsHtml(st);
+      }
+    }
+    function onParseViewport(entries) {
+      for (const entry of entries) {
+        const art = entry.target.closest("article.item[data-key]");
+        if (!art) continue;
+        const key = art.getAttribute("data-key");
+        if (!key) continue;
+        const part = entry.target.getAttribute("data-parse-part");
+        if (part !== "title" && part !== "summary") continue;
+        if (!parsePartVisible[key]) parsePartVisible[key] = { title: false, summary: false };
+        // threshold:1 — only count when the element is fully inside the viewport
+        parsePartVisible[key][part] = !!(entry.isIntersecting && entry.intersectionRatio >= 1);
+        if (!(parsePartVisible[key].title && parsePartVisible[key].summary)) continue;
+        if (parseViewportReady[key]) continue;
+        parseViewportReady[key] = true;
+        const it = ALL.find(x => x.title === key);
+        if (!it) continue;
+        kickViewportLive(it);
+        art.querySelectorAll("[data-parse-part]").forEach((node) => {
+          if (parseViewportObserver) parseViewportObserver.unobserve(node);
+        });
+      }
+    }
+    function bindParseViewportObserver() {
+      if (parseViewportObserver) {
+        parseViewportObserver.disconnect();
+        parseViewportObserver = null;
+      }
+      Object.keys(parsePartVisible).forEach((k) => { delete parsePartVisible[k]; });
+      parseViewportObserver = new IntersectionObserver(onParseViewport, {
+        root: null,
+        rootMargin: "0px",
+        threshold: 1
+      });
+      document.querySelectorAll("article.item[data-key]").forEach((art) => {
+        const key = art.getAttribute("data-key");
+        if (!key) return;
+        const it = ALL.find(x => x.title === key);
+        if (!it) return;
+        const industry = String(prefs.industry || "").trim();
+        const parseSt = liveParse[key];
+        const impactSt = industry ? liveImpact[impactCacheKey(key, industry)] : null;
+        // Restore cached paint without re-calling; only observe when still needed
+        if (parseSt) patchParseDom(key);
+        if (impactSt) patchImpactDom(key);
+        const parseDone = parseSt && (parseSt.status === "ok" || parseSt.status === "loading");
+        const impactDone = !industry || (impactSt && (impactSt.status === "ok" || impactSt.status === "loading"));
+        if (parseDone && impactDone) {
+          parseViewportReady[key] = true;
+          return;
+        }
+        // Prefetch none ahead — wait until title + summary are both fully visible
+        parseViewportReady[key] = false;
+        art.querySelectorAll("[data-parse-part]").forEach((node) => parseViewportObserver.observe(node));
+      });
+    }
+    async function ensureLiveDeep(it) {
+      const key = it.title;
+      const st = liveDeep[key];
+      if (st && st.status === "ok") return st.text;
+      if (st && st.status === "loading") return null;
+      liveDeep[key] = { status: "loading", text: "", err: "" };
+      patchDeepDom(key);
+      try {
+        const data = await apiGenerate({
+          mode: "deep",
+          ...newsCacheFields(it)
+        });
+        liveDeep[key] = { status: "ok", text: banEllipsis(String(data.text || "").trim(), false), err: "" };
+        patchDeepDom(key);
+        return liveDeep[key].text;
+      } catch (e) {
+        liveDeep[key] = { status: "err", text: "", err: String(e.message || e) };
+        patchDeepDom(key);
+        return null;
+      }
+    }
+    /** Strip Markdown ### / ## / #; render 【小节】 as styled headings, tight to body. */
+    function formatDeepHtml(raw) {
+      const text = String(raw || "").replace(/\r\n/g, "\n").trim();
+      if (!text) return "";
+      const lines = text.split("\n");
+      const sections = [];
+      let cur = null;
+      const flush = () => {
+        if (!cur) return;
+        const body = cur.paras.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+        sections.push({ heading: cur.heading, body });
+        cur = null;
+      };
+      for (const line of lines) {
+        const hm = line.match(/^\s{0,3}#{1,6}\s*(.+?)\s*$/);
+        const bracket = line.match(/^\s*(【[^】]+】)\s*$/);
+        if (hm || bracket) {
+          flush();
+          let title = (hm ? hm[1] : bracket[1]).trim();
+          title = title.replace(/^#{1,6}\s*/, "").trim();
+          cur = { heading: title, paras: [] };
+          continue;
+        }
+        if (!cur) cur = { heading: "", paras: [] };
+        cur.paras.push(line);
+      }
+      flush();
+      if (!sections.length) return `<p class="deep-p">${esc(text)}</p>`;
+      return sections.map((sec) => {
+        const paras = String(sec.body || "").split(/\n\s*\n/).map((p) => p.replace(/\n/g, "").trim()).filter(Boolean);
+        const bodyHtml = paras.length
+          ? paras.map((p) => `<p class="deep-p">${esc(p)}</p>`).join("")
+          : "";
+        const h = sec.heading ? `<h3 class="deep-h">${esc(sec.heading)}</h3>` : "";
+        return `<section class="deep-sec">${h}${bodyHtml}</section>`;
+      }).join("");
+    }
+    function patchDeepDom(key) {
+      const art = document.querySelector('article.item[data-key="' + CSS.escape(key) + '"]');
+      if (!art) return;
+      const body = art.querySelector("[data-live-deep]");
+      if (!body) return;
+      const st = liveDeep[key];
+      if (!st) return;
+      body.classList.remove("live-loading", "live-err");
+      if (st.status === "loading") {
+        body.classList.add("live-loading");
+        body.textContent = "深度解读生成中";
+      } else if (st.status === "err") {
+        body.classList.add("live-err");
+        body.textContent = "生成失败：" + (st.err || "请稍后重试");
+      } else {
+        body.innerHTML = formatDeepHtml(st.text);
+      }
+    }
+    /** Canonical 4-round collision: opt立论 → con立论 → opt反驳 → con反驳 */
+    function normalizeDebateTurns(turns) {
+      const wanted = ["opt", "con", "opt", "con"];
+      const pool = (Array.isArray(turns) ? turns : []).map((r) => ({
+        role: r && r.role === "con" ? "con" : "opt",
+        text: banEllipsis(String((r && r.text) || "").trim(), false)
+      })).filter((r) => r.text);
+      const out = [];
+      for (const want of wanted) {
+        let idx = pool.findIndex((t) => t.role === want);
+        if (idx < 0 && pool.length) idx = 0;
+        if (idx < 0) break;
+        const pick = pool.splice(idx, 1)[0];
+        out.push({ role: want, text: banEllipsis(pick.text.slice(0, 220), false) });
+      }
+      return out.slice(0, 4);
+    }
+    async function ensureLiveDebate(it) {
+      const key = it.title;
+      const st = liveDebateSeed[key];
+      if (st && st.status === "ok" && st.turns && st.turns.length) return normalizeDebateTurns(st.turns);
+      liveDebateSeed[key] = { status: "loading", turns: [], err: "" };
+      try {
+        const data = await apiGenerate({
+          mode: "debate",
+          ...newsCacheFields(it)
+        });
+        const turns = normalizeDebateTurns(data.turns);
+        liveDebateSeed[key] = { status: "ok", turns, err: "" };
+        return turns;
+      } catch (e) {
+        liveDebateSeed[key] = { status: "err", turns: [], err: String(e.message || e) };
+        throw e;
+      }
+    }
+    async function livePasserbyFollowups(userText, it) {
+      // 路人甲 replies stay per-session — server does not disk-cache debate_followup
+      const data = await apiGenerate({
+        mode: "debate_followup",
+        ...newsCacheFields(it),
+        userText: userText
+      });
+      return normalizeDebateTurns(data.turns);
+    }
+
+    const SOURCE_ORDER = ["华尔街见闻","财联社","澎湃新闻","IT之家","新华网","中国证券报","中国新闻网","凤凰网","GitHub","Defence Industry Europe","联合早报","知乎","今日头条"];
+    const ALL_SOURCES = (() => {
+      const set = new Set(ALL.map(i => i.platform).filter(Boolean));
+      SOURCE_ORDER.forEach(s => set.add(s));
+      return [...SOURCE_ORDER.filter(s => set.has(s)), ...[...set].filter(s => !SOURCE_ORDER.includes(s)).sort()];
+    })();
+
+    const LS_KEY = "morning-feed-prefs-v2";
+    const LS_LEGACY_SRC = "morning-feed-sources-v1";
+    const LS_LEGACY_IND = "morning-feed-industry-v1";
+    /** Hard cap: daily edition always shows at most 10 after filter + hot/recency rank. */
+    const SHOW_LIMIT = 10;
+    const FEED_TZ = "Asia/Shanghai";
+    const FEED_REFRESH_HOUR = 8; // 08:00 Shanghai soft-refresh for new edition
+
+    function defaultPrefs() {
+      return { industry: "", sources: [...ALL_SOURCES], follow: [] };
+    }
+    function loadPrefs() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (p && Array.isArray(p.sources)) {
+            return {
+              industry: String(p.industry || "").trim(),
+              sources: p.sources.filter(s => ALL_SOURCES.includes(s)),
+              follow: Array.isArray(p.follow) ? p.follow.filter(f => PRESETS.includes(f)) : []
+            };
+          }
+        }
+      } catch (_) {}
+      const d = defaultPrefs();
+      try {
+        const ind = localStorage.getItem(LS_LEGACY_IND);
+        if (ind) d.industry = ind;
+        const src = localStorage.getItem(LS_LEGACY_SRC);
+        if (src) {
+          const arr = JSON.parse(src);
+          if (Array.isArray(arr) && arr.length) d.sources = arr.filter(s => ALL_SOURCES.includes(s));
+        }
+      } catch (_) {}
+      if (!d.sources.length) d.sources = [...ALL_SOURCES];
+      return d;
+    }
+    function savePrefs(p) {
+      // Drop legacy pageSize if present — show count is fixed at SHOW_LIMIT.
+      const clean = {
+        industry: String(p.industry || "").trim(),
+        sources: Array.isArray(p.sources) ? p.sources : [...ALL_SOURCES],
+        follow: Array.isArray(p.follow) ? p.follow : []
+      };
+      localStorage.setItem(LS_KEY, JSON.stringify(clean));
+    }
+
+    let prefs = loadPrefs();
+    let draft = null;
+    const openDeep = new Set();
+    const openDebate = new Set();
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+    }
+    function normalizeIndustry(raw) {
+      const s = String(raw || "").trim();
+      if (!s) return "";
+      if (INDUSTRY_ALIASES[s]) return s;
+      for (const [name, kws] of Object.entries(INDUSTRY_ALIASES)) {
+        if (name.includes(s) || s.includes(name.split("/")[0])) return name;
+        if (kws.some(k => s.includes(k))) return name;
+      }
+      return s;
+    }
+    function industryKeywords(ind) {
+      const canon = normalizeIndustry(ind);
+      const base = INDUSTRY_ALIASES[canon] ? [...INDUSTRY_ALIASES[canon]] : [];
+      String(ind).split(/[\/、,\s]+/).filter(Boolean).forEach(p => base.push(p));
+      base.push(ind);
+      return [...new Set(base.filter(Boolean))];
+    }
+    function relevanceScore(item, ind) {
+      if (!ind) return 0;
+      const kws = industryKeywords(ind);
+      const blob = [item.title, item.summary, item.analysis, item.topicLabel, ...(item.lanes || [])].join(" ");
+      const rule = TOPIC_RULES[item.topicId] || { tags: [] };
+      let score = 0;
+      for (const k of kws) {
+        if (!k || k.length < 2) continue;
+        if (blob.includes(k)) score += 2;
+        if ((rule.tags || []).some(t => t.includes(k) || k.includes(t))) score += 3;
+      }
+      if ((item.lanes || []).some(l => ["AI","科技","军事","遥感","GitHub 开源"].includes(l)) && industryKeywords(ind).some(k => (item.lanes||[]).join(",").includes(k) || blob.includes(k))) score += 1;
+      return score;
+    }
+    function clickbaitPenalty(item) {
+      let p = 0;
+      if (CLICKBAIT_RE.test(item.title || "")) p += 8;
+      if ((item.crossCount || 1) <= 1 && CLICKBAIT_RE.test(item.title || "")) p += 10;
+      if (!STRONG.has(item.platform)) p += 6;
+      if ((item.platform === "知乎" || item.platform === "今日头条") && (item.crossCount || 1) <= 1) p += 8;
+      return p;
+    }
+    function confidenceFor(item, relevance) {
+      let c = 42;
+      const cross = item.crossCount || 1;
+      if (cross >= 2) c += 22;
+      if (cross >= 3) c += 8;
+      if (STRONG.has(item.platform)) c += 10;
+      if (relevance >= 5) c += 12;
+      else if (relevance >= 3) c += 7;
+      else if (relevance >= 1) c += 3;
+      else c -= 8;
+      c -= clickbaitPenalty(item);
+      return Math.max(18, Math.min(92, Math.round(c)));
+    }
+    function analyzeItem(item, industryRaw) {
+      const industry = String(industryRaw || "").trim();
+      if (!industry) return null;
+      const rel = relevanceScore(item, industry);
+      const rule = TOPIC_RULES[item.topicId];
+      const conf = confidenceFor(item, rel);
+      let labels = [], body = "";
+      if (!rule || rel < 1) {
+        labels = ["间接/弱相关"];
+        body = `与「${industry}」直接关联较弱。当前交叉来源：${(item.crossPlatforms || [item.platform]).join("、")}。弱相关时不建议因标题情绪做行业判断。`;
+      } else {
+        labels = [...(rule.labels || ["观察"])];
+        if (rule.storm && rel >= 3 && !labels.includes("风暴")) labels.push("风暴");
+        if (rule.disrupt && rel >= 3 && !labels.includes("颠覆")) labels.push("颠覆");
+        body = rule.gist(industry);
+      }
+      return { labels, confidence: conf, body, relevance: rel };
+    }
+    function badgeClass(label) {
+      if (label.includes("正向")) return "pos";
+      if (label.includes("负向")) return "neg";
+      if (label.includes("风暴")) return "storm";
+      if (label.includes("颠覆")) return "disrupt";
+      return "neu";
+    }
+    function matchesFollow(item) {
+      if (!prefs.follow.length) return true;
+      return prefs.follow.some(f => relevanceScore(item, f) >= 1);
+    }
+    function formatTime(t) {
+      const s = String(t || "").trim();
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+      if (!m) return s;
+      if (m[4] != null) return `${m[2]}-${m[3]} ${m[4]}:${m[5]}`;
+      return `${m[2]}-${m[3]}`;
+    }
+    function filteredAll() {
+      const selected = new Set(prefs.sources);
+      return ALL.filter(it => {
+        if (!selected.has(it.platform)) return false;
+        if (!matchesFollow(it)) return false;
+        return true;
+      });
+    }
+    function itemTimeMs(it) {
+      const s = String(it.time || "").trim();
+      if (!s) return 0;
+      const t = Date.parse(s.replace(" ", "T") + "+08:00");
+      return Number.isFinite(t) ? t : 0;
+    }
+    function followBoost(it) {
+      if (!prefs.follow.length) return 0;
+      let best = 0;
+      for (const f of prefs.follow) best = Math.max(best, relevanceScore(it, f));
+      return best;
+    }
+    /** Latest + hottest among interest/source-filtered pool (hard top SHOW_LIMIT). */
+    function rankedFeed() {
+      return filteredAll().slice().sort((a, b) => {
+        const fb = followBoost(b) - followBoost(a);
+        if (fb) return fb;
+        const hot = (b.hot ? 1 : 0) - (a.hot ? 1 : 0);
+        if (hot) return hot;
+        const cross = (b.crossCount || 1) - (a.crossCount || 1);
+        if (cross) return cross;
+        return itemTimeMs(b) - itemTimeMs(a);
+      });
+    }
+    function visible() {
+      return rankedFeed().slice(0, SHOW_LIMIT);
+    }
+    function updateEndMarker(shown, total) {
+      const end = document.getElementById("end");
+      if (!end) return;
+      if (total === 0) {
+        end.hidden = true;
+        end.textContent = "— 今日信息流到底了 —";
+        return;
+      }
+      end.hidden = false;
+      end.textContent = "— 今日信息流到底了 —";
+    }
+
+    /* Solid color-block circles + meme faces; fill only — no ring/stroke/outline */
+    const AVATAR_SVG = {
+      opt: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="#7dd3c0"/><ellipse cx="22" cy="26" rx="5" ry="6" fill="#0f3d39"/><ellipse cx="42" cy="26" rx="5" ry="6" fill="#0f3d39"/><circle cx="23.5" cy="24.5" r="1.6" fill="#fff"/><circle cx="43.5" cy="24.5" r="1.6" fill="#fff"/><path d="M18 38c4 10 24 10 28 0" fill="none" stroke="#0f3d39" stroke-width="3.2" stroke-linecap="round"/><path d="M46 14l3 6 6-1-4 5 3 5-6-2-4 5 0-6-6-1 5-4z" fill="#ffd24a"/><text x="32" y="58" text-anchor="middle" font-size="9" fill="#1f5c57" font-family="sans-serif">+</text></svg>`,
+      con: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="#f0c49a"/><path d="M14 22c6-4 12-2 14 2" fill="none" stroke="#5a3216" stroke-width="2.6" stroke-linecap="round"/><path d="M36 20c4-5 12-5 16 0" fill="none" stroke="#5a3216" stroke-width="2.6" stroke-linecap="round"/><circle cx="23" cy="28" r="4.2" fill="#3a2412"/><circle cx="43" cy="28" r="4.2" fill="#3a2412"/><circle cx="24.2" cy="26.8" r="1.2" fill="#fff"/><circle cx="44.2" cy="26.8" r="1.2" fill="#fff"/><path d="M24 44c5-4 12-4 17 0" fill="none" stroke="#3a2412" stroke-width="3" stroke-linecap="round"/><circle cx="48" cy="40" r="3.2" fill="#6ec6ff" opacity=".9"/><path d="M48 34v3" stroke="#6ec6ff" stroke-width="2" stroke-linecap="round"/></svg>`,
+      user: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="#9eb6d4"/><circle cx="22" cy="27" r="4.5" fill="#1e3350"/><circle cx="42" cy="27" r="4.5" fill="#1e3350"/><circle cx="23.5" cy="25.5" r="1.3" fill="#fff"/><circle cx="43.5" cy="25.5" r="1.3" fill="#fff"/><path d="M22 40c3 7 17 7 20 0" fill="none" stroke="#1e3350" stroke-width="3" stroke-linecap="round"/><path d="M12 18c6 2 8 7 7 12" fill="none" stroke="#2f4a6d" stroke-width="2.4" stroke-linecap="round"/><circle cx="11" cy="16" r="2.4" fill="#2f4a6d"/></svg>`
+    };
+    /** Trial: split combined analysis into 代表什么 + 趋势 without changing wording. */
+    function splitAnalysis(raw) {
+      const s = String(raw || "").trim();
+      if (!s) return { meaning: "", trend: "" };
+      const m = s.match(/^(.*?)(趋势上|趋势是|趋势：|趋势判断)([\s\S]*)$/);
+      if (m && m[1].trim()) {
+        return { meaning: m[1].trim(), trend: (m[2] + m[3]).trim() };
+      }
+      return { meaning: s, trend: "" };
+    }
+    function commentHtml(kind, name, initial, body, extra) {
+      return `<div class="comment">
+          <div class="comment-av ${esc(kind)}" aria-hidden="true">${esc(initial)}</div>
+          <div class="comment-main">
+            <div class="comment-meta"><span class="comment-name">${esc(name)}</span></div>
+            <p class="comment-body">${esc(body)}</p>
+            ${extra || ""}
+          </div>
+        </div>`;
+    }
+    function analysisCommentsHtml(it) {
+      const key = it.title;
+      const st = liveParse[key];
+      let cls = "parse-quote";
+      let inner = parseQuoteHtml("—", "—");
+      // Do NOT call SiliconFlow here — viewport gate kicks ensureLiveParse
+      if (st && st.status === "ok" && (st.read || st.subtext || st.text)) {
+        inner = parseQuoteHtml(
+          formatParseBold(banEllipsis(st.read || "—", true)),
+          formatParseBold(banEllipsis(st.subtext || "—", true))
+        );
+      } else if (st && st.status === "loading") {
+        inner = parseQuoteHtml("生成中", "—");
+        cls = "parse-quote live-loading";
+      } else if (st && st.status === "err") {
+        inner = parseQuoteHtml("暂时不可用，点此重试", "—", { errRead: true });
+      }
+      // Live LLM only — two-line「AI 秒读」+「潜台词」blockquote
+      return `<blockquote class="${cls}" data-live-parse="1">${inner}</blockquote>`;
+    }
+    function impactHtml(it) {
+      const industry = String(prefs.industry || "").trim();
+      if (!industry) return "";
+      const st = liveImpact[impactCacheKey(it.title, industry)];
+      let cls = "impact";
+      let payload = emptyImpactSlots();
+      // Do NOT call SiliconFlow here — same viewport gate as AI 秒读
+      if (st && st.status === "ok") {
+        payload = st;
+      } else if (st && st.status === "loading") {
+        payload = {
+          positive: { title: "生成中", detail: "" },
+          negative: { title: "生成中", detail: "" },
+          observe: { title: "生成中", detail: "" },
+          confidence: NaN
+        };
+        cls = "impact live-loading";
+      } else if (st && st.status === "err") {
+        payload = {
+          positive: { title: "暂时不可用，点此重试", detail: "" },
+          negative: { title: "—", detail: "" },
+          observe: { title: "—", detail: "" },
+          confidence: NaN
+        };
+        cls = "impact live-err";
+      }
+      return `<div class="${cls}" data-live-impact="1">${impactRowsHtml(payload)}</div>`;
+    }
+    function renderPrefsChip() { /* prefs chip removed */ }
+
+
+    // Mock debate presets removed — live LLM via /api/generate
+    function buildDebate(it) {
+      // Seed turns are streamed into debateExtras — never paint twice.
+      return [];
+    }
+    const debateExtras = Object.create(null); // title -> [{role,text}]
+    const debateStream = Object.create(null); // title -> stream state
+    const passerbyIntentState = Object.create(null); // title -> { noiseStreak, lastNoise }
+    // Group-chat pacing: one bubble at a time (typing → typewriter → pause → next)
+    // Fast reveal — keep sequential 4-round order; SiliconFlow still supplies text.
+    const STREAM_THINK_MS = 350;  // typing-dots before each speaker (≤400ms)
+    const STREAM_TYPE_MS = 20;    // typewriter ms per char (~15–25ms)
+    const STREAM_PAUSE_MS = 400;  // gap after one bubble before next thinks (≤500ms)
+    function markStreamActive(on) {
+      window.__morningFeedStreamActive = !!on;
+    }
+    function streamSleep(ms, s) {
+      return new Promise((resolve) => {
+        if (!s || s.aborted) { resolve(false); return; }
+        s.timer = setTimeout(() => {
+          s.timer = null;
+          resolve(!s.aborted);
+        }, ms);
+      });
+    }
+    function hashStr(s) {
+      let h = 2166136261;
+      const str = String(s || "");
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+    function lightCensor(raw) {
+      let t = String(raw || "").replace(/\s+/g, " ").trim();
+      if (!t) return "";
+      t = t
+        .replace(/傻逼|傻比|傻B|傻b/gi, "傻*")
+        .replace(/卧槽|我操|我靠/g, (m) => m[0] + "*")
+        .replace(/他妈的|特么的/g, "他*的")
+        .replace(/去死|找死/g, "*")
+        .replace(/滚蛋|滚粗/g, "滚*");
+      return t.slice(0, 180);
+    }
+    function snipQuote(text) {
+      const s = String(text || "").trim();
+      if (s.length <= 22) return s;
+      return s.slice(0, 22) + "…";
+    }
+    function detectLean(raw) {
+      const t = String(raw || "");
+      const bull = /看多|上车|机会|底部|低估|爆发|利好|买入|加仓|长期|不必慌|太悲观|乐观|还能涨|空间大/.test(t);
+      const bear = /看空|泡沫|崩|顶|风险|高估|砸|跑|减仓|兑现|陷阱|太乐观|危险|利空|透支|撑不住/.test(t);
+      if (bull && !bear) return "bull";
+      if (bear && !bull) return "bear";
+      if (/胡说|瞎说|离谱|搞笑|带节奏|洗脑|忽悠|智障|傻/.test(t)) return "flame";
+      if (/为什么|怎么|是否|有没有|真的|？|\?/.test(t)) return "ask";
+      return "neutral";
+    }
+    function newsHook(it) {
+      const topic = (it && it.topicLabel) || "这条新闻";
+      const title = String((it && it.title) || "");
+      const blob = `${topic} ${title} ${String((it && it.summary) || "").slice(0, 80)}`;
+      if (/表外|负债|租约|承诺/.test(blob)) return { anchor: "表外承诺与现金流兑现", bull: "锁电锁机柜的窗口仍在", bear: "敞口兑现快过变现就会挨打" };
+      if (/资本开支|CapEx|峰值|见顶|常规叙事/.test(blob)) return { anchor: "资本开支增速与回报考核", bull: "主题成熟不等于需求消失", bear: "叙事一切换估值常先压缩" };
+      if (/芯片|半导体|英特尔|费半|英伟达|AMD/.test(blob)) return { anchor: "硬件分层与指引质量", bull: "能锁大客户的算力仍稀缺", bear: "弱指引会按周期股重估" };
+      if (/LongCat|多模态|智能体|Agent|大模型/.test(blob)) return { anchor: "长程Agent与可复核交付", bull: "工程闭环才是真壁垒", bear: "发布会≠线上可交付" };
+      if (/数据中心|电力|选举|算力园区/.test(blob)) return { anchor: "电力与社会许可约束", bull: "绿电与分成能换审批", bear: "并网延期会改扩张曲线" };
+      if (/存储|HBM|避风港/.test(blob)) return { anchor: "存储涨价持续性", bull: "报表锚比故事股更稳", bear: "周期一缩短避风港就失效" };
+      if (/霍尔木兹|伊朗|美伊|海峡/.test(blob)) return { anchor: "海峡通行与油运溢价", bull: "谈判窗口真实可交易缓和", bear: "口头降温随时可逆转" };
+      if (/卫星|遥感|GEOINT|OSINT|MCP/.test(blob)) return { anchor: "空天数据与Agent化工具", bull: "组网密度决定商业化", bear: "炫酷接口盖不住合规与信源" };
+      if (/苹果|iPhone|端侧/.test(blob)) return { anchor: "端侧AI是否转化为换机", bull: "服务韧性可托估值底", bear: "销量疲软会拖累风险偏好" };
+      return { anchor: topic, bull: "需求与渗透窗口还在", bear: "兑现尺子比叙事更硬" };
+    }
+    function hasSwearSignal(raw, censored) {
+      const r = String(raw || "");
+      const c = String(censored || "");
+      if (/傻逼|傻比|傻B|傻b|卧槽|我操|我靠|他妈的|特么的|去死|找死|滚蛋|滚粗|操你|日你|草泥|妈的/i.test(r)) return true;
+      // after lightCensor: masked forms
+      if (/傻\*|他\*的|滚\*|[\u4e00-\u9fff]\*/.test(c) && /\*/.test(c)) {
+        if (/傻\*|他\*的|滚\*/.test(c)) return true;
+        // single-char mask from 去死/找死 etc.
+        if (c.includes("*") && /死|操|靠|槽/.test(r)) return true;
+      }
+      return /\*/.test(c) && /傻|滚|操|靠|槽|妈/.test(r + c);
+    }
+    function isNoiseOrEmpty(text) {
+      const s = String(text || "").trim();
+      if (!s) return true;
+      if (s.length <= 1) return true;
+      // repeated same char/digit: 1111, 哈哈哈, 。。。 
+      if (/^(.)\1{2,}$/u.test(s)) return true;
+      if (/^([0-9])\1{2,}$/.test(s)) return true;
+      if (/^[。.\-_=+~!！?？~哈嘿呵嗯啊呃]+$/u.test(s) && s.length <= 12) return true;
+      if (/^(哈|呵|嘿|嗯|啊|哦|呃|咳){2,}$/u.test(s)) return true;
+      // mostly punctuation / emoji-ish fillers
+      const han = (s.match(/[\u4e00-\u9fffA-Za-z0-9]/g) || []).join("");
+      if (han.length <= 1 && s.length <= 8) return true;
+      return false;
+    }
+    function topicKeywords(it) {
+      const hook = newsHook(it);
+      const blob = [
+        (it && it.topicLabel) || "",
+        (it && it.title) || "",
+        String((it && it.summary) || "").slice(0, 120),
+        hook.anchor || "",
+        ...(it && it.lanes || [])
+      ].join(" ");
+      const parts = blob.split(/[\s,，、：:！!？?\/\|·\-—（）()【】\[\]]+/).filter((w) => w && w.length >= 2);
+      const extra = [];
+      // pull distinctive 2+ char tokens from title
+      String((it && it.title) || "").replace(/[A-Za-z0-9\u4e00-\u9fff]{2,}/g, (m) => { extra.push(m); return m; });
+      return [...new Set(parts.concat(extra))].filter((w) => w.length >= 2).slice(0, 40);
+    }
+    function isTopicRelated(text, it) {
+      const s = String(text || "");
+      if (!s) return false;
+      // generic debate/market lexicon still counts as on-topic for this product
+      if (/新闻|这篇|这条|观点|辩论|乐观|保守|看多|看空|估值|现金流|兑现|风险|利好|利空|买入|减仓|泡沫|基本面|行情|盘|财报|指引|主题|叙事/.test(s)) return true;
+      const kws = topicKeywords(it);
+      let hits = 0;
+      for (const k of kws) {
+        if (k.length < 2) continue;
+        if (s.includes(k)) hits += k.length >= 4 ? 2 : 1;
+        if (hits >= 2) return true;
+      }
+      // single strong keyword from topic label / hook anchor
+      const topic = (it && it.topicLabel) || "";
+      if (topic && s.includes(topic)) return true;
+      const hook = newsHook(it);
+      if (hook.anchor && (s.includes(hook.anchor) || hook.anchor.split(/与|和|的/).some((p) => p.length >= 2 && s.includes(p)))) return true;
+      return hits >= 1 && s.length >= 6;
+    }
+    function isChitchat(text) {
+      const s = String(text || "").trim();
+      if (/你好|在吗|吃了吗|早上好|晚安|天气|笑话|聊天|无聊|签到|打卡|摸摸|亲亲|嗨|hello|hi\b|hey\b/i.test(s)) return true;
+      if (/今天怎么样|你是谁|你叫什么|在干嘛|几岁|帅哥|美女/.test(s)) return true;
+      return false;
+    }
+    function routePasserbyIntent(raw, censored, it) {
+      const key = (it && it.title) || "";
+      const st = passerbyIntentState[key] || { noiseStreak: 0, lastNoise: "" };
+      const swear = hasSwearSignal(raw, censored);
+      const noise = isNoiseOrEmpty(censored);
+      const related = isTopicRelated(censored, it);
+      const chat = isChitchat(censored);
+
+      if (swear || (noise && st.noiseStreak >= 1) || (noise && st.lastNoise && st.lastNoise === censored)) {
+        st.noiseStreak = (st.noiseStreak || 0) + 1;
+        st.lastNoise = censored || st.lastNoise;
+        passerbyIntentState[key] = st;
+        return { intent: "unite", reason: swear ? "swear" : "repeat-noise" };
+      }
+      if (noise) {
+        st.noiseStreak = (st.noiseStreak || 0) + 1;
+        st.lastNoise = censored;
+        passerbyIntentState[key] = st;
+        // first noise → soft dismiss as chitchat-ignore; second+ → unite (handled above)
+        return { intent: "ignore", reason: "noise" };
+      }
+      // reset noise streak on substantive text
+      st.noiseStreak = 0;
+      st.lastNoise = "";
+      passerbyIntentState[key] = st;
+      if (related) return { intent: "debate", reason: "topic" };
+      if (chat) return { intent: "ignore", reason: "chitchat" };
+      // short vague text with no topic hit → ignore
+      if (String(censored || "").trim().length < 8) return { intent: "ignore", reason: "vague" };
+      // longer but off-topic → ignore
+      return { intent: "ignore", reason: "offtopic" };
+    }
+    function buildIgnoreTurns(userText, it, reason) {
+      const q = snipQuote(userText);
+      const topic = (it && it.topicLabel) || "这条新闻";
+      const seed = hashStr(userText + "|ignore|" + topic);
+      const conFirst = (seed % 2) === 1;
+      let a, b;
+      if (reason === "noise") {
+        a = { role: "opt", text: `哈？「${q}」这算发言吗。聊回「${topic}」行不行 🙄` };
+        b = { role: "con", text: `瞟一眼就略过。没空跟乱码较劲 👀` };
+      } else if (reason === "chitchat") {
+        a = { role: "opt", text: `哎别寒暄了，这屋就吵「${topic}」 👋` };
+        b = { role: "con", text: `对，有观点再说，客套先搁着 😅` };
+      } else {
+        a = { role: "opt", text: `「${q}」跟「${topic}」对不上，当没看见。` };
+        b = { role: "con", text: `跑题了兄弟。咬着新闻关键词再来 👀` };
+      }
+      return conFirst ? [b, a] : [a, b];
+    }
+    function buildUniteShutupTurns(userText, it, reason) {
+      const q = snipQuote(userText) || "…";
+      const topic = (it && it.topicLabel) || "这条新闻";
+      const seed = hashStr(userText + "|unite|" + topic);
+      const conFirst = (seed % 2) === 0;
+      const a = { role: "opt", text: reason === "swear"
+        ? `打码也没用啊。「${q}」到此为止，闭嘴，让我们把「${topic}」吵完 🙄`
+        : `又来空转？闭嘴哈。这轮留给「${topic}」 🙄` };
+      const b = { role: "con", text: reason === "swear"
+        ? `这次我跟乐观派站一块：带脏字就下场。闭嘴 😅`
+        : `附议。灌水就别占麦，闭嘴，要不带点干货 😅` };
+      return conFirst ? [b, a] : [a, b];
+    }
+    function resolvePasserbyRoute(raw, censored, it) {
+      const route = routePasserbyIntent(raw, censored, it);
+      if (route.intent === "unite") {
+        return { intent: route.intent, reason: route.reason, turns: buildUniteShutupTurns(censored, it, route.reason) };
+      }
+      if (route.intent === "ignore") {
+        return { intent: route.intent, reason: route.reason, turns: buildIgnoreTurns(censored, it, route.reason) };
+      }
+      return { intent: "debate", reason: route.reason, turns: null };
+    }
+
+    function sideOfRole(role) {
+      return role === "con" ? "right" : "left";
+    }
+    function bubbleHtml(r, userSide) {
+      const role = r.role === "user" ? "user" : (r.role === "con" ? "con" : "opt");
+      const name = role === "user" ? "路人甲" : (role === "opt" ? "乐观派" : "保守派");
+      const av = AVATAR_SVG[role] || AVATAR_SVG.user;
+      const sideClass = role === "user" ? ` side-${userSide === "right" ? "right" : "left"}` : "";
+      return `<div class="bubble ${role}${sideClass}">
+            <div class="bubble-av" aria-hidden="true" title="${name}">${av}</div>
+            <div class="bubble-main">
+              <div class="bubble-name">${name}</div>
+              <p class="bubble-text">${esc(r.text)}</p>
+            </div>
+          </div>`;
+    }
+    function typingBubbleHtml(role) {
+      const name = role === "con" ? "保守派" : "乐观派";
+      const avRole = role === "con" ? "con" : "opt";
+      const cls = role === "con" ? "con" : "opt";
+      const av = AVATAR_SVG[avRole] || AVATAR_SVG.user;
+      return `<div class="bubble ${cls} typing" data-typing="1" aria-live="polite" aria-label="${esc(name)}正在输入">
+            <div class="bubble-av" aria-hidden="true" title="${esc(name)}">${av}</div>
+            <div class="bubble-main">
+              <div class="bubble-name">${esc(name)}</div>
+              <p class="bubble-text"><span class="dot"></span><span class="dot"></span><span class="dot"></span></p>
+            </div>
+          </div>`;
+    }
+    const debateComposeReady = Object.create(null); // title -> true after 4-round stream finishes
+    function debateHtml(it, isOpen) {
+      const key = it.title;
+      const rounds = buildDebate(it).concat(debateExtras[key] || []);
+      let lastSide = "left";
+      const bubbles = rounds.map((r) => {
+        if (r.role === "user") {
+          const side = lastSide === "right" ? "left" : "right";
+          lastSide = side;
+          return bubbleHtml(r, side);
+        }
+        lastSide = sideOfRole(r.role);
+        return bubbleHtml(r);
+      });
+      const stream = debateStream[key];
+      const busy = !!(stream && stream.active);
+      // Hide 路人甲 until four-round stream finishes; keep row flex (发送 far right)
+      const showCompose = !busy && !!debateComposeReady[key];
+      const seed = liveDebateSeed[key];
+      let hint = "乐观派 vs 保守派 · 不构成投资建议";
+      let hintCls = "debate-hint";
+      if (seed && seed.status === "loading" && !rounds.length) {
+        hint = "双方正在入场…";
+      } else if (seed && seed.status === "err" && !rounds.length) {
+        hint = "辩论生成失败：" + (seed.err || "请重试");
+        hintCls = "debate-hint live-err";
+      }
+      return `<div class="debate-panel${isOpen ? " show" : ""}" data-debate-panel="${esc(key)}">
+          <div class="debate-inner">
+            <p class="debate-label">AI观点碰撞</p>
+            <p class="${hintCls}">${esc(hint)}</p>
+            <div class="debate-thread">${bubbles.join("")}</div>
+            <form class="debate-compose" data-debate-form="${esc(key)}" autocomplete="off"${showCompose ? "" : " hidden"}>
+              <input type="text" name="flame" maxlength="180" placeholder="路人甲发送拱火观点" aria-label="路人甲发送拱火观点" />
+              <button type="submit">发送</button>
+            </form>
+          </div>
+        </div>`;
+    }
+    function debatePanelEl(key) {
+      return document.querySelector(`[data-debate-panel="${CSS.escape(key)}"]`);
+    }
+    function debateThreadEl(key) {
+      const panel = debatePanelEl(key);
+      return panel ? panel.querySelector(".debate-thread") : null;
+    }
+    function scrollDebateThread(key) {
+      const thread = debateThreadEl(key);
+      if (thread) thread.scrollTop = thread.scrollHeight;
+      return debatePanelEl(key);
+    }
+    function setDebateComposeVisible(key, visible) {
+      const panel = debatePanelEl(key);
+      if (!panel) return;
+      const form = panel.querySelector("form.debate-compose");
+      if (!form) return;
+      form.hidden = !visible;
+    }
+    function setDebateComposeBusy(key, busy) {
+      const panel = debatePanelEl(key);
+      if (!panel) return;
+      const input = panel.querySelector('input[name="flame"]');
+      const btn = panel.querySelector("button[type=submit]");
+      if (input) {
+        input.disabled = !!busy;
+        input.placeholder = "路人甲发送拱火观点";
+      }
+      if (btn) {
+        btn.disabled = !!busy;
+        btn.textContent = "发送";
+      }
+      // Hide while streaming / waiting; reveal only after 4-round finish
+      setDebateComposeVisible(key, !busy && !!debateComposeReady[key]);
+    }
+    function stopDebateStream(key) {
+      const s = debateStream[key];
+      if (!s) return;
+      s.aborted = true;
+      s.active = false;
+      if (s.timer) clearTimeout(s.timer);
+      if (s.typingTimer) clearTimeout(s.typingTimer);
+      const thread = debateThreadEl(key);
+      if (thread) thread.querySelectorAll("[data-typing]").forEach((n) => n.remove());
+      delete debateStream[key];
+      const stillBusy = Object.keys(debateStream).some((k) => debateStream[k] && debateStream[k].active);
+      markStreamActive(stillBusy);
+      setDebateComposeBusy(key, false);
+    }
+    function finishDebateStream(key) {
+      debateComposeReady[key] = true;
+      stopDebateStream(key);
+      setDebateComposeBusy(key, false);
+      const panel = scrollDebateThread(key);
+      const nextInput = panel && panel.querySelector('input[name="flame"]');
+      if (nextInput && debateComposeReady[key]) {
+        setDebateComposeVisible(key, true);
+        nextInput.focus();
+      }
+    }
+    function appendStreamingBubble(key, role) {
+      const thread = debateThreadEl(key);
+      if (!thread) return null;
+      thread.querySelectorAll("[data-typing]").forEach((n) => n.remove());
+      const name = role === "con" ? "保守派" : "乐观派";
+      const av = AVATAR_SVG[role === "con" ? "con" : "opt"];
+      const cls = role === "con" ? "con" : "opt";
+      const wrap = document.createElement("div");
+      wrap.className = `bubble ${cls}`;
+      wrap.setAttribute("data-stream-bubble", "1");
+      wrap.innerHTML = `<div class="bubble-av" aria-hidden="true" title="${name}">${av}</div>
+            <div class="bubble-main">
+              <div class="bubble-name">${name}</div>
+              <p class="bubble-text" data-stream-text="1"></p>
+            </div>`;
+      thread.appendChild(wrap);
+      scrollDebateThread(key);
+      return wrap.querySelector("[data-stream-text]");
+    }
+    function showTypingIndicator(key, role) {
+      const thread = debateThreadEl(key);
+      if (!thread) return false;
+      thread.querySelectorAll("[data-typing]").forEach((n) => n.remove());
+      thread.insertAdjacentHTML("beforeend", typingBubbleHtml(role));
+      scrollDebateThread(key);
+      return true;
+    }
+    function typewriterAsync(el, fullText, s) {
+      return new Promise((resolve) => {
+        if (!el) { resolve(false); return; }
+        const text = String(fullText || "");
+        el.textContent = "";
+        let i = 0;
+        const tick = () => {
+          if (!s || s.aborted) { resolve(false); return; }
+          if (i >= text.length) {
+            el.textContent = text;
+            resolve(true);
+            return;
+          }
+          // Always 1 code point — never batch multi-char jumps (felt "instant")
+          const cp = text.codePointAt(i);
+          const step = cp > 0xffff ? 2 : 1;
+          el.textContent += text.slice(i, i + step);
+          i += step;
+          scrollDebateThread(s.key);
+          s.typingTimer = setTimeout(tick, STREAM_TYPE_MS);
+        };
+        tick();
+      });
+    }
+    function lastBubbleSide(thread) {
+      const bubbles = thread.querySelectorAll(".bubble:not([data-typing])");
+      if (!bubbles.length) return "left";
+      const last = bubbles[bubbles.length - 1];
+      if (last.classList.contains("con") || last.classList.contains("side-right")) return "right";
+      return "left";
+    }
+    function appendUserBubbleLive(key, text) {
+      const thread = debateThreadEl(key);
+      if (!thread) return false;
+      const side = lastBubbleSide(thread) === "right" ? "left" : "right";
+      thread.insertAdjacentHTML("beforeend", bubbleHtml({ role: "user", text }, side));
+      scrollDebateThread(key);
+      return true;
+    }
+    async function pumpDebateStream(key) {
+      const s = debateStream[key];
+      if (!s || s.aborted) return;
+      const gen = s.gen;
+      markStreamActive(true);
+      setDebateComposeBusy(key, true);
+      while (s.queue.length && !s.aborted && debateStream[key] === s && s.gen === gen) {
+        if (!openDebate.has(key)) { stopDebateStream(key); return; }
+        const peek = s.queue[0];
+        const role = peek.role === "con" ? "con" : "opt";
+        // Step A: typing dots for THIS speaker only
+        showTypingIndicator(key, role);
+        const okThink = await streamSleep(STREAM_THINK_MS, s);
+        if (!okThink || s.aborted || s.gen !== gen || debateStream[key] !== s) return;
+        if (!openDebate.has(key)) { stopDebateStream(key); return; }
+        // Step B: one empty bubble → typewriter (never dump the queue)
+        const next = s.queue.shift();
+        const textEl = appendStreamingBubble(key, role);
+        if (!textEl) {
+          // Thread DOM gone — abort cleanly (do NOT flush remaining queue into extras)
+          finishDebateStream(key);
+          return;
+        }
+        debateExtras[key] = (debateExtras[key] || []).concat([{ role, text: "" }]);
+        const typed = await typewriterAsync(textEl, String(next.text || ""), s);
+        if (!typed || s.aborted || s.gen !== gen || debateStream[key] !== s) return;
+        const arr = debateExtras[key] || [];
+        if (arr.length) arr[arr.length - 1] = { role, text: String(next.text || "") };
+        debateExtras[key] = arr;
+        if (s.queue.length) {
+          // Step C: pause, then next speaker
+          const okPause = await streamSleep(STREAM_PAUSE_MS, s);
+          if (!okPause || s.aborted || s.gen !== gen || debateStream[key] !== s) return;
+        }
+      }
+      if (!s.aborted && s.gen === gen && debateStream[key] === s) finishDebateStream(key);
+    }
+
+    function cardHtml(it) {
+      const key = it.title;
+      const isDeep = openDeep.has(key);
+      const isDebate = openDebate.has(key);
+      const deepSt = liveDeep[key];
+      let deepInner = "深度解读生成中";
+      let deepCls = "deep-body live-loading";
+      if (deepSt && deepSt.status === "ok" && deepSt.text) {
+        deepInner = formatDeepHtml(deepSt.text);
+        deepCls = "deep-body";
+      } else if (deepSt && deepSt.status === "err") {
+        deepInner = esc("生成失败：" + (deepSt.err || "请稍后重试"));
+        deepCls = "deep-body live-err";
+      } else {
+        deepInner = esc(deepInner);
+      }
+      const deepPanel = `
+        <div class="deep-panel${isDeep ? " show" : ""}">
+          <div class="deep-inner">
+            <p class="deep-label">深度解读</p>
+            <div class="${deepCls}" data-live-deep="1">${deepInner}</div>
+          </div>
+        </div>`;
+      const actions = `
+        <div class="actions">
+          <div class="actions-btns">
+            ${it.url ? `<a class="action-link" href="${esc(it.url)}" target="_blank" rel="noopener">查看原文</a>` : ""}
+            <button type="button" class="deep-btn${isDeep ? " open" : ""}" data-deep="${esc(key)}">${isDeep ? "收起解读" : "深度解读"}</button>
+            <button type="button" class="deep-btn debate-btn${isDebate ? " open" : ""}" data-debate="${esc(key)}">${isDebate ? "收起碰撞" : "AI观点碰撞"}</button>
+          </div>
+        </div>`;
+      const comments = `<div class="comments">${analysisCommentsHtml(it)}${impactHtml(it)}</div>`;
+      const body = `
+        <h2 data-parse-part="title">${esc(it.title)}</h2>
+        <p class="summary" data-parse-part="summary">${esc(it.summary)}</p>
+        ${comments}
+        ${actions}
+        ${deepPanel}
+        ${debateHtml(it, isDebate)}`;
+      return `<article class="item${it.hot ? " hot-item" : ""}" data-key="${esc(key)}">${body}</article>`;
+    }
+
+    function renderFeed() {
+      const all = rankedFeed();
+      const list = all.slice(0, SHOW_LIMIT);
+      renderPrefsChip();
+      document.getElementById("feed").innerHTML = list.map((it) => cardHtml(it)).join("");
+      updateEndMarker(list.length, all.length);
+      bindParseViewportObserver();
+    }
+
+    function openSettingsModal() {
+      draft = {
+        industry: prefs.industry,
+        sources: [...prefs.sources],
+        follow: [...prefs.follow]
+      };
+      document.getElementById("cfg-industry").value = draft.industry;
+      renderCfgIndustryPresets();
+      renderCfgFollow();
+      renderCfgSources();
+      const modal = document.getElementById("settings-modal");
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+      document.getElementById("cfg-industry").focus();
+    }
+
+    function closeSettingsModal() {
+      const modal = document.getElementById("settings-modal");
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    function openSettingsDraft() {
+      openSettingsModal();
+    }
+
+    function renderCfgIndustryPresets() {
+      document.getElementById("cfg-industry-presets").innerHTML = PRESETS.map(p =>
+        `<button type="button" data-p="${esc(p)}" class="${draft.industry === p ? "on" : ""}">${esc(p)}</button>`
+      ).join("");
+    }
+    function renderCfgFollow() {
+      document.getElementById("cfg-follow").innerHTML = PRESETS.map(p =>
+        `<button type="button" data-f="${esc(p)}" class="${draft.follow.includes(p) ? "on" : ""}">${esc(p)}</button>`
+      ).join("");
+    }
+    function renderCfgSources() {
+      document.getElementById("cfg-sources").innerHTML = ALL_SOURCES.map(s =>
+        `<label class="${draft.sources.includes(s) ? "on" : ""}"><input type="checkbox" value="${esc(s)}" ${draft.sources.includes(s) ? "checked" : ""}/>${esc(s)}</label>`
+      ).join("");
+    }
+
+    document.getElementById("cfg-industry-presets").onclick = (e) => {
+      const b = e.target.closest("button[data-p]");
+      if (!b || !draft) return;
+      draft.industry = b.dataset.p;
+      document.getElementById("cfg-industry").value = draft.industry;
+      renderCfgIndustryPresets();
+    };
+    document.getElementById("cfg-follow").onclick = (e) => {
+      const b = e.target.closest("button[data-f]");
+      if (!b || !draft) return;
+      const f = b.dataset.f;
+      if (draft.follow.includes(f)) draft.follow = draft.follow.filter(x => x !== f);
+      else draft.follow.push(f);
+      renderCfgFollow();
+    };
+    document.getElementById("cfg-sources").onchange = (e) => {
+      const inp = e.target.closest("input[type=checkbox]");
+      if (!inp || !draft) return;
+      if (inp.checked) {
+        if (!draft.sources.includes(inp.value)) draft.sources.push(inp.value);
+      } else {
+        draft.sources = draft.sources.filter(s => s !== inp.value);
+      }
+      renderCfgSources();
+    };
+
+    function showToast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg || "保存成功";
+      el.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.classList.remove("show"), 1400);
+    }
+
+    function commitSettings() {
+      const industry = String(document.getElementById("cfg-industry").value || "").trim();
+      const sources = draft && draft.sources.length ? [...draft.sources] : [...ALL_SOURCES];
+      if (!sources.length) {
+        alert("请至少选择一个新闻来源");
+        return;
+      }
+      prefs = {
+        industry,
+        sources,
+        follow: draft ? [...draft.follow] : []
+      };
+      savePrefs(prefs);
+      showToast("保存成功");
+      closeSettingsModal();
+      renderFeed();
+    }
+
+    document.getElementById("btn-open-settings").onclick = () => openSettingsModal();
+    document.getElementById("btn-close-settings").onclick = () => closeSettingsModal();
+    document.getElementById("btn-cancel-settings").onclick = () => closeSettingsModal();
+    document.getElementById("btn-save-settings").onclick = commitSettings;
+    document.getElementById("settings-modal").addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeSettingsModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && document.getElementById("settings-modal").classList.contains("open")) {
+        closeSettingsModal();
+      }
+    });
+
+    function onPanelClick(e) {
+      const debateBtn = e.target.closest("button[data-debate]");
+      const deepBtn = e.target.closest("button[data-deep]");
+      if (!debateBtn && !deepBtn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (debateBtn) {
+        const key = debateBtn.dataset.debate;
+        const opening = !openDebate.has(key);
+        // Closing / switching panels aborts in-flight stream
+        Object.keys(debateStream).forEach(stopDebateStream);
+        openDebate.clear();
+        openDeep.clear();
+        if (opening) {
+          openDebate.add(key);
+          const it = ALL.find(x => x.title === key) || { title: key, summary: "", topicLabel: "这条新闻" };
+          const seed = liveDebateSeed[key];
+          const already = seed && seed.status === "ok" && seed.turns && seed.turns.length;
+          const hasAi = (debateExtras[key] || []).some((t) => t.role === "opt" || t.role === "con");
+          // Hide 路人甲 until a finished 4-round stream; keep ready if already painted
+          debateComposeReady[key] = !!(already && hasAi);
+          renderFeed();
+          if (already) {
+            if (!hasAi) {
+              startPasserbyStream(key, normalizeDebateTurns(seed.turns));
+            }
+          } else {
+            debateComposeReady[key] = false;
+            liveDebateSeed[key] = { status: "loading", turns: [], err: "" };
+            renderFeed();
+            ensureLiveDebate(it).then((turns) => {
+              if (!openDebate.has(key)) return;
+              debateExtras[key] = [];
+              debateComposeReady[key] = false;
+              renderFeed();
+              startPasserbyStream(key, turns);
+            }).catch(() => {
+              if (openDebate.has(key)) renderFeed();
+            });
+          }
+          return;
+        }
+      } else if (deepBtn) {
+        const key = deepBtn.dataset.deep;
+        const opening = !openDeep.has(key);
+        Object.keys(debateStream).forEach(stopDebateStream);
+        openDeep.clear();
+        openDebate.clear();
+        if (opening) {
+          openDeep.add(key);
+          renderFeed();
+          const it = ALL.find(x => x.title === key) || { title: key, summary: "", topicLabel: "这条新闻" };
+          ensureLiveDeep(it);
+          return;
+        }
+      }
+      renderFeed();
+    }
+    function startPasserbyStream(key, turns) {
+      // Seed/followup already normalized to 4; ignore/unite may be 2 turns — do not re-pad.
+      const queue = (turns || []).map((r) => ({
+        role: r.role === "con" ? "con" : "opt",
+        text: String(r.text || "")
+      })).filter((r) => r.text);
+      if (!queue.length) return;
+      const prev = debateStream[key];
+      const gen = (prev && prev.gen ? prev.gen : 0) + 1;
+      stopDebateStream(key);
+      debateStream[key] = {
+        key,
+        queue,
+        timer: null,
+        typingTimer: null,
+        active: true,
+        aborted: false,
+        gen
+      };
+      markStreamActive(true);
+      setDebateComposeBusy(key, true);
+      // async pump — never await in submit handler; chain via promises inside
+      pumpDebateStream(key);
+    }
+    function ensureDebateOpenForPasserby(key, userText) {
+      // Prefer live DOM append (no full re-render) — renderFeed() was dumping
+      // the whole thread and making replies feel "instant"/batched.
+      const alreadyOpen = openDebate.has(key) && debateThreadEl(key);
+      debateExtras[key] = (debateExtras[key] || []).concat([{ role: "user", text: userText }]);
+      if (alreadyOpen) {
+        stopDebateStream(key);
+        appendUserBubbleLive(key, userText);
+        scrollDebateThread(key);
+        return;
+      }
+      openDeep.clear();
+      openDebate.clear();
+      openDebate.add(key);
+      stopDebateStream(key);
+      renderFeed();
+      scrollDebateThread(key);
+    }
+    function submitPasserby(form) {
+      const key = form.getAttribute("data-debate-form");
+      if (!key) return;
+      if (debateStream[key] && debateStream[key].active) return;
+      const input = form.querySelector('input[name="flame"]');
+      const raw = String((input && input.value) || "");
+      const text = lightCensor(raw);
+      const it = ALL.find(x => x.title === key) || { title: key, summary: "", topicLabel: "这条新闻" };
+      if (!text) {
+        const route = routePasserbyIntent(raw, "", it);
+        if (route.intent !== "unite") {
+          if (input) input.focus();
+          return;
+        }
+        if (input) input.value = "";
+        ensureDebateOpenForPasserby(key, "…");
+        startPasserbyStream(key, buildUniteShutupTurns("…", it, "repeat-noise"));
+        return;
+      }
+      const routed = resolvePasserbyRoute(raw, text, it);
+      if (input) input.value = "";
+      // 1) 路人甲 bubble ONLY — immediate
+      ensureDebateOpenForPasserby(key, text);
+      if (routed.intent !== "debate") {
+        startPasserbyStream(key, routed.turns);
+        return;
+      }
+      // 2) Live LLM follow-up — sequential typewriter after fetch
+      setDebateComposeBusy(key, true);
+      markStreamActive(true);
+      livePasserbyFollowups(text, it).then((turns) => {
+        if (!openDebate.has(key)) { markStreamActive(false); setDebateComposeBusy(key, false); return; }
+        if (!turns || !turns.length) {
+          setDebateComposeBusy(key, false);
+          markStreamActive(false);
+          return;
+        }
+        startPasserbyStream(key, turns);
+      }).catch((e) => {
+        setDebateComposeBusy(key, false);
+        markStreamActive(false);
+        const thread = debateThreadEl(key);
+        if (thread) {
+          const p = document.createElement("p");
+          p.className = "debate-hint live-err";
+          p.textContent = "回击生成失败：" + String(e.message || e);
+          thread.appendChild(p);
+        }
+      });
+    }
+
+    document.getElementById("feed").onclick = onPanelClick;
+    document.getElementById("feed").addEventListener("submit", (e) => {
+      const form = e.target.closest("form[data-debate-form]");
+      if (!form) return;
+      e.preventDefault();
+      e.stopPropagation();
+      submitPasserby(form);
+    });
+
+    renderFeed();
+
+    /** Soft-reload at next 08:00 Asia/Shanghai (or when crawl updates HTML via /__mtime). */
+    (function scheduleShanghaiMorningReload() {
+      function shanghaiParts(d) {
+        const parts = new Intl.DateTimeFormat("en-GB", {
+          timeZone: FEED_TZ,
+          year: "numeric", month: "2-digit", day: "2-digit",
+          hour: "2-digit", minute: "2-digit", second: "2-digit",
+          hour12: false
+        }).formatToParts(d || new Date());
+        const get = (t) => Number(parts.find(p => p.type === t).value);
+        return { y: get("year"), mo: get("month"), d: get("day"), h: get("hour"), mi: get("minute"), se: get("second") };
+      }
+      function msUntilNext0800() {
+        const p = shanghaiParts();
+        const since = ((p.h * 60 + p.mi) * 60 + p.se) * 1000;
+        const target = FEED_REFRESH_HOUR * 3600 * 1000;
+        let wait = target - since;
+        if (wait < 1500) wait += 24 * 3600 * 1000;
+        return wait;
+      }
+      function softReload() {
+        if (window.__morningFeedStreamActive) {
+          setTimeout(softReload, 12000);
+          return;
+        }
+        location.reload();
+      }
+      function arm() {
+        setTimeout(() => { softReload(); }, msUntilNext0800());
+      }
+      arm();
+    })();
+  </script>
+
+  <!-- soft-refresh: poll mtime, auto-reload when daily crawl updates HTML -->
+  <script>
+  (function () {
+    if (window.__morningFeedLiveReload) return;
+    window.__morningFeedLiveReload = true;
+    var last = null;
+    var fails = 0;
+    function tick() {
+      fetch("/__mtime?t=" + Date.now(), { cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+        .then(function (j) {
+          fails = 0;
+          var m = j && (j.mtime || j.mtimeMs);
+          if (m == null) return;
+          if (last == null) { last = m; return; }
+          if (String(m) !== String(last)) {
+            // Never reload mid group-chat stream — kills timers and makes
+            // the next paint look like an instant dump of queued replies.
+            if (window.__morningFeedStreamActive) return;
+            last = m;
+            location.reload();
+          }
+        })
+        .catch(function () {
+          fails += 1;
+        })
+        .finally(function () {
+          setTimeout(tick, fails > 5 ? 4000 : 1200);
+        });
+    }
+    setTimeout(tick, 800);
+  })();
+  </script>
+</body>
+</html>

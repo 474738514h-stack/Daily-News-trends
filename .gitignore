@@ -1,0 +1,38 @@
+# Secrets — never commit real keys
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Local SiliconFlow env (use .env.example as template)
+.env.siliconflow
+
+# AI cross-user cache contents (keep empty dir via .gitkeep)
+internal/ai-cache/*
+!internal/ai-cache/.gitkeep
+
+# Ephemeral public tunnel URLs
+**/morning-feed-public-url.txt
+*tunnel*
+*trycloud*
+*ngrok*
+
+# Backups / scratch
+*.bak
+*.tmp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
