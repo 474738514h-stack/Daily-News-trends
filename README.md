@@ -2,6 +2,14 @@
 
 日刊式行业热点阅读页（v0.1）：按关注行业与来源筛出当日 Top 10，并提供 AI 秒读 / 深度解读 / 观点碰撞。
 
+## 在线体验
+
+一键打开公开演示（Cloudflare quick tunnel，同域代理 + SiliconFlow API 已接通）：
+
+**[https://tree-packing-fell-planned.trycloudflare.com](https://tree-packing-fell-planned.trycloudflare.com)**
+
+> 演示机重启或 tunnel 重建后 URL 可能变化；以本段链接为准。若仅用 GitHub Pages 托管静态 `docs/morning-feed.html`，页面可打开，但 AI 秒读 / 深度解读 / 观点碰撞需本仓库代理与 SiliconFlow API Key，静态托管 alone 无法调用 `/api/*`。
+
 ## 快速开始
 
 ```bash
